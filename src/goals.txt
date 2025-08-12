@@ -1,0 +1,13 @@
+Alias support
+
+Command substitution
+
+Globbing (wildcard expansion)
+
+Support for quotes and escape characters
+
+Job prioritization / scheduling features
+
+Multi-threading or concurrency handling
+
+Syntax highlighting in the shell prompt
