@@ -30,9 +30,10 @@ typedef struct __stack_t {
 void stack_init (stack_t*);
 int stack_pop(stack_t*);
 char* stack_top(stack_t*);
+void stack_push(stack_t*, char*);
 int getOperNum (char, char);
 char** parse (char*, int);
 bool isOper (char*);
 int getPrecedence (char*);
-stack_t* prefixConversion (char**);
+char* postfix_conversion (char**, int);
 void cleanToken (char**);

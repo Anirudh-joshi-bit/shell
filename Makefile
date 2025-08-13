@@ -12,8 +12,11 @@ OUTPUT = $(BUILD_FOLDER)/SHELL
 
 all : $(OUTPUT)
 
-$(OUTPUT): $(BUILD_FILES)
-	$(CXX) $(FLAGS) $(BUILD_FILES) -o $(OUTPUT)
+$(OUTPUT) : $(SRC_FILES)
+	$(CXX) $(SRC_FILES) -o $(OUTPUT)
+
+#$(OUTPUT): $(BUILD_FILES)
+#	$(CXX) $(FLAGS)  $(BUILD_FILES) -o $(OUTPUT)
 
 $(BUILD_FOLDER)/%.o : $(SRC_FOLDER)/%.c
 	$(CXX) $(FLAGS) -c $^ -o $@

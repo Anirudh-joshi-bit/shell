@@ -7,6 +7,7 @@ void node_init (node_t* node, char* command){
 }
 
 void list_init (list_t* l){
+	// the l->head has to be init (malloced)  to dereference node !!
 	l->head = malloc (sizeof (node_t));
 	node_init (l->head, "-1");
 	l->size = 0;
@@ -37,9 +38,9 @@ int delete_head (list_t* l){
 	return 0;
 }
 
-
 void stack_init (stack_t* st){
 
+	st->l = malloc (sizeof (list_t));
 	list_init(st->l);
 	st->size = 0;
 }
