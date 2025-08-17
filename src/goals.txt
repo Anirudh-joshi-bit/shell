@@ -1,4 +1,4 @@
-Alias support
+alias support
 
 Command substitution
 

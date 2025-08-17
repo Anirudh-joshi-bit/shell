@@ -15,7 +15,7 @@ int getPrecedence (char* oper){
 }
 
 
-int string_append (char* dest, char* target, int dest_end){
+int string_append (char* dest, char* target, int dest_end, int dest_size){
 
 	char* target_it = target;
 
@@ -23,7 +23,8 @@ int string_append (char* dest, char* target, int dest_end){
 	while (*target_it && *target_it == ' ') target_it++;
 
 
-	while (*target_it){
+	while (dest_end < dest_size && *target_it){
+		if (dest_end >= dest_size) return -1;
 		dest[dest_end++] = *target_it;
 		target_it ++;
 	}
@@ -46,7 +47,7 @@ char* postfix_conversion (char** toks, int input_size){
 
 			if (!strcmp (*tok_iter, ")")){
 				while (strcmp (stack_top (st), "(")){
-					postfix_iter = string_append (postfix, stack_top (st), postfix_iter);
+					postfix_iter = string_append (postfix, stack_top (st), postfix_iter, input_size);
 					assert(!stack_pop(st));
 				}
 				assert (!stack_pop(st));
@@ -57,19 +58,23 @@ char* postfix_conversion (char** toks, int input_size){
 
 				while (getPrecedence(stack_top (st)) >= getPrecedence (*tok_iter)){
 					// pop, append;
-					postfix_iter = string_append (postfix, stack_top(st), postfix_iter);
+					postfix_iter = string_append (postfix, stack_top(st), postfix_iter, input_size);
 					assert (!stack_pop (st));
 				}
 				stack_push(st, *tok_iter);
 			}
 		}
 		else {
-			postfix_iter = string_append (postfix, *tok_iter, postfix_iter);
+			postfix_iter = string_append (postfix, *tok_iter, postfix_iter, input_size);
+			if (postfix_iter == -1) {
+				perror (" too big input !!");
+				return	NULL;
+			}
 		}
 		tok_iter ++;
 	}
 	while (st->size > 1){			// the last element is ( that we dont want to add to the string;
-		postfix_iter = string_append (postfix, stack_top (st), postfix_iter);
+		postfix_iter = string_append (postfix, stack_top (st), postfix_iter, input_size);
 		stack_pop(st);
 	}
 

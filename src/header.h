@@ -9,7 +9,8 @@
 
 #define MAXLEN_COMMAND 100
 #define MAXNUM_COMMAND 100
-
+#define MAXLEN_INPUT 2048
+#define MAXLEN_DELIM 30
 
 // structs ->
 typedef struct __node_t {
@@ -32,8 +33,10 @@ int stack_pop(stack_t*);
 char* stack_top(stack_t*);
 void stack_push(stack_t*, char*);
 int getOperNum (char, char);
-char** parse (char*, int);
 bool isOper (char*);
+char** parse (char*, int);
+int getOperNum (char, char);
 int getPrecedence (char*);
 char* postfix_conversion (char**, int);
 void cleanToken (char**);
+int string_append (char*, char*, int, int);
