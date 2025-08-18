@@ -56,7 +56,8 @@ char** parse (char* input, int size){
 			row++;
 		}
 	}
-	tokens[row][col] = '\0';
+	tokens[row][col] = input[size-1];
+	tokens[row][col+1] = '\0';
 	//tokens[1+row][0] = '\0';
 	tokens [1+row] = NULL;
 	return tokens;

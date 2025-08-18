@@ -4,51 +4,53 @@ int main  (){
 
 	while (true){
 
-	char* main_input = malloc (1024);
-	size_t main_size = 1024;
-	int main_iter = 0;
+		char* main_input = malloc (1024);
+		size_t main_size = 1024;
+		int main_iter = 0;
 
-	char* input = malloc (1024);
-	int size = 1024;
+		char* input = malloc (1024);
+		int size = 1024;
 
-	fgets (input, size, stdin);
-	int error_found = 0;
-	size = strlen (input);
+		fgets (input, size, stdin);
+		int error_found = 0;
+		size = strlen (input);
 
-	// handling <<
+		// handling <<
 
-	for (int i=0; i<size-1; i++){
-		if (main_iter >= main_size) {
-
-			perror ("too big input \n");
-			error_found = 1;
-			break;
-
-		}
-		if (input[i] == '<' && input[i+1] == '<'){
-
-			if (main_iter >= main_size-1){
-				perror ("too big of a command \n");
+		for (int i=0; i<size-1; i++){
+			if (main_iter >= main_size) {
+				free (input);
+				perror ("too big input \n");
 				error_found = 1;
 				break;
 
 			}
-			main_input[main_iter++] = '<';
-			main_input[main_iter++] = '<';
+			if (input[i] == '<' && input[i+1] == '<'){
 
-			char* delim = malloc (20);
-			int size_delim = 20;
-			i+=2;
+				if (main_iter >= main_size-1){
+					perror ("too big of a command \n");
+					free (input);
+					error_found = 1;
+					break;
 
-			int del_iter = 0;
+				}
+				main_input[main_iter++] = '<';
+				main_input[main_iter++] = '<';
 
-		while (i<size && input[i] == ' ') i++;
-			if (i == size-1) {
-				perror ("no delimeter found !!\n");
-				error_found = 1;
+				char* delim = malloc (20);
+				int size_delim = 20;
+				i+=2;
+
+				int del_iter = 0;
+
+				while (i<size && input[i] == ' ') i++;
+				if (i == size-1) {
+					perror ("no delimeter found !!\n");
+					free (input);
+					error_found = 1;
 				break;
-			}
-			while (i<size){
+				}
+				while (i<size){
 				if (input[i] == ' ') {
 					error_found =  1;
 					perror ("error in delimeter in << \n");
@@ -61,65 +63,68 @@ int main  (){
 					break;
 				}
 				delim [del_iter++] = input[i++];
-			}
-			if (error_found){
-
-				break;
-
-			}
-			delim[del_iter] = '\0';
-			printf ("delim = %s\n", delim);
-
-			// get line ->
-			char* temp = malloc (1024);
-			int size_temp = 1024;
-			fgets(temp, size_temp, stdin);
-
-			while (strcmp(delim, temp)){
-				if (temp[0] == '\0') continue;
-				main_iter = string_append(main_input, temp, main_iter, main_size) ;
-			//	main_input[main_iter] = '\n';
-				memset (temp, 0, size_temp);
-				fgets (temp, size_temp, stdin);
-				if (main_iter == -1) {
-					perror ("too big input !!! \n");
 				}
+				if (error_found){
 
-			}
-		 }
-		else {
+					break;
+
+				}
+				delim[del_iter] = '\0';
+				printf ("delim = %s\n", delim);
+
+				// get line ->
+				char* temp = malloc (1024);
+				int size_temp = 1024;
+				fgets(temp, size_temp, stdin);
+
+				while (strcmp(delim, temp)){
+					if (temp[0] == '\0') continue;
+					main_iter = string_append(main_input, temp, main_iter, main_size) ;
+				//	main_input[main_iter] = '\n';
+					memset (temp, 0, size_temp);
+					fgets (temp, size_temp, stdin);
+					if (main_iter == -1) {
+						perror ("too big input !!! \n");
+						free (temp);
+						error_found = true;
+						break;
+					}
+				}
+				if (error_found){
+
+					break;
+				}
+				free (temp);
+			 }
+			else {
 				main_input[main_iter++] = input[i];
-		}
+			}
 		// this is worrking as the below line is changinng the last char into a newline
 		// but not incrementing the iterator
 		// => for the next iteration,that \n will get overwritten as again in the loop, we are increamenting
 		// i but not this iterator
-	main_input [main_iter] = '\n';
-	}
-	// if main iter has changed its place then only mark the next char null char
-	// or we can say if the loop has ever been active then it will automatically insert a new line char
-	// at the end
-	//
-	//
-	// but if the loop has never been active then there is no new linew char in current pos (main_iter)
-	// meaning skipping one place will include some garbage value !!
+		main_input [main_iter] = '\n';
+		}
+		// if main iter has changed its place then only mark the next char null char
+		// or we can say if the loop has ever been active then it will automatically insert a new line char
+		// at the end
+		//
+		//
+		// but if the loop has never been active then there is no new linew char in current pos (main_iter)
+		// meaning skipping one place will include some garbage value !!
 
 
-	//if (main_iter)
-		//main_input [main_iter+1] = '\0';
-	//else main_input [main_iter] = '\0';
+		//if (main_iter)
+			//main_input [main_iter+1] = '\0';
+		//else main_input [main_iter] = '\0';
 		main_input[main_iter] = '\0';
 
 
-	if (error_found) {
-		printf ("error found inside the for loop !! \n");
-		return 1;
-	}
-	main_size = strlen (main_input);
-	printf ("%s \n", main_input );
-
-
-
+		if (error_found) {
+			printf ("error found inside the for loop !! \n");
+			return 1;
+		}
+		main_size = strlen (main_input);
 
 
 		 main_size = strlen (main_input);
@@ -131,15 +136,15 @@ int main  (){
 			continue;
 		}
 
-		//printf ("hii");
-//		char** it = toks;
-//		while (*it){
-//			printf ("%s\n", *it);
-//			it++;
-//		}
+			//printf ("hii");
+		char** it = toks;
+		while (*it){
+			printf ("%s\n", *it);
+			it++;
+		}
 	//	printf ("%d", (int)size);
 		// !!!!!!!!!!!! seg fault
-		printf ("%d \n \n \n ", main_size);
+		printf ("this is after postfix_conv -> \n");
 		postfix_conversion (toks, (int)main_size);
 		cleanToken (toks);
 		free (main_input);
