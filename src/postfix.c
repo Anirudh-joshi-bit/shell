@@ -15,39 +15,35 @@ int getPrecedence (char* oper){
 }
 
 
-int string_append (char* dest, char* target, int dest_end, int dest_size){
 
-	char* target_it = target;
-
-	// delete headint spaces
-	while (*target_it && *target_it == ' ') target_it++;
-
-
-	while (dest_end < dest_size && *target_it){
-		if (dest_end >= dest_size) return -1;
-		dest[dest_end++] = *target_it;
-		target_it ++;
-	}
-	return dest_end;
-}
-
-
-char* postfix_conversion (char** toks, int input_size){
+char** postfix_conversion (char** toks, int input_size){
 	stack_t* st = malloc(sizeof (stack_t));
 	stack_init (st);
 	char** tok_iter = toks;
 
 	stack_push(st, "(");
+	// to do
+	//
+	//
+	//
+	//
+	//
+// dont push the string into a string but to a 2d string
+// so that no datra is lost  => insert the string into toks
+	char** toks_postfix = malloc (MAXNUM_COMMAND);
 
-	char* postfix = malloc (input_size* sizeof (char));
-	int postfix_iter = 0;
+	char** tok_iter_res = toks_postfix;
+
+
+	// first check if the given input as a valid paranthesis or not
 
 	while (*tok_iter) {
 		if (isOper (*tok_iter)){
 
 			if (!strcmp (*tok_iter, ")")){
 				while (strcmp (stack_top (st), "(")){
-					postfix_iter = string_append (postfix, stack_top (st), postfix_iter, input_size);
+					*tok_iter_res = strdup (stack_top (st));
+					tok_iter_res++;
 					assert(!stack_pop(st));
 				}
 				assert (!stack_pop(st));
@@ -57,32 +53,32 @@ char* postfix_conversion (char** toks, int input_size){
 			else{
 
 				while (getPrecedence(stack_top (st)) >= getPrecedence (*tok_iter)){
-					// pop, append;
-					postfix_iter = string_append (postfix, stack_top(st), postfix_iter, input_size);
+					*tok_iter_res  = strdup (stack_top (st));					// this is important as stack_pop () is freeing the memory
+																					// hence store a copy instead of the actual pointer;
+					tok_iter_res++;
+				// pop, append;
 					assert (!stack_pop (st));
 				}
 				stack_push(st, *tok_iter);
 			}
 		}
 		else {
-			postfix_iter = string_append (postfix, *tok_iter, postfix_iter, input_size);
-			if (postfix_iter == -1) {
-				perror (" too big input !!");
-				return	NULL;
-			}
+			*tok_iter_res = strdup (*tok_iter);
+			tok_iter_res++;
+
 		}
+
 		tok_iter ++;
 	}
 	while (st->size > 1){			// the last element is ( that we dont want to add to the string;
-		postfix_iter = string_append (postfix, stack_top (st), postfix_iter, input_size);
+		*tok_iter_res = strdup (stack_top (st));
+		tok_iter_res ++;
 		stack_pop(st);
 	}
 
 	free (st);
-	postfix_iter = '\0';
-
-	printf ("%s\n", postfix);
+	free (toks);
 
 
-	return postfix;
+	return toks_postfix;
 }

@@ -1,5 +1,25 @@
 #include "header.h"
 
+int string_append (char* dest, char* target, int dest_end, int dest_size){
+
+	char* target_it = target;
+
+	// delete headint spaces
+	while (*target_it && *target_it == ' ') target_it++;
+
+
+	while (dest_end < dest_size && *target_it){
+		if (dest_end >= dest_size) return -1;
+		dest[dest_end++] = *target_it;
+		target_it ++;
+	}
+	return dest_end;
+}
+
+
+
+
+
 int main  (){
 
 	while (true){
@@ -19,7 +39,6 @@ int main  (){
 
 		for (int i=0; i<size-1; i++){
 			if (main_iter >= main_size) {
-				free (input);
 				perror ("too big input \n");
 				error_found = 1;
 				break;
@@ -29,7 +48,6 @@ int main  (){
 
 				if (main_iter >= main_size-1){
 					perror ("too big of a command \n");
-					free (input);
 					error_found = 1;
 					break;
 
@@ -37,37 +55,38 @@ int main  (){
 				main_input[main_iter++] = '<';
 				main_input[main_iter++] = '<';
 
-				char* delim = malloc (20);
-				int size_delim = 20;
-				i+=2;
+					char* delim = malloc (20);
+					int size_delim = 20;
+					i+=2;
 
-				int del_iter = 0;
+					int del_iter = 0;
 
-				while (i<size && input[i] == ' ') i++;
-				if (i == size-1) {
-					perror ("no delimeter found !!\n");
-					free (input);
-					error_found = 1;
-				break;
-				}
+					while (i<size && input[i] == ' ') i++;
+					if (i == size-1) {
+						perror ("no delimeter found !!\n");
+						free (delim);
+						error_found = 1;
+						break;
+					}
 				while (i<size){
-				if (input[i] == ' ') {
-					error_found =  1;
-					perror ("error in delimeter in << \n");
-					break;
 
+					if (input[i] == ' ') {
+						error_found =  1;
+						perror ("error in delimeter in << \n");
+						break;
+
+					}
+					if (del_iter >= 19){
+						error_found = 1;
+						perror ("error ! too big delimeter \n");
+						break;
+					}
+					delim [del_iter++] = input[i++];
 				}
-				if (del_iter >= 19){
-					error_found = 1;
-					perror ("error ! too big delimeter \n");
-					break;
-				}
-				delim [del_iter++] = input[i++];
-				}
+
 				if (error_found){
-
+					free (delim);
 					break;
-
 				}
 				delim[del_iter] = '\0';
 				printf ("delim = %s\n", delim);
@@ -78,24 +97,27 @@ int main  (){
 				fgets(temp, size_temp, stdin);
 
 				while (strcmp(delim, temp)){
+
 					if (temp[0] == '\0') continue;
 					main_iter = string_append(main_input, temp, main_iter, main_size) ;
 				//	main_input[main_iter] = '\n';
 					memset (temp, 0, size_temp);
 					fgets (temp, size_temp, stdin);
+
 					if (main_iter == -1) {
 						perror ("too big input !!! \n");
-						free (temp);
 						error_found = true;
 						break;
 					}
 				}
 				if (error_found){
-
+					free (temp);
+					free (delim);
 					break;
 				}
 				free (temp);
-			 }
+				free(delim);
+			}
 			else {
 				main_input[main_iter++] = input[i];
 			}
@@ -122,8 +144,13 @@ int main  (){
 
 		if (error_found) {
 			printf ("error found inside the for loop !! \n");
-			return 1;
+			free (main_input);
+			free (input);
+			continue;
 		}
+
+		// handling << -> done
+
 		main_size = strlen (main_input);
 
 
@@ -133,6 +160,7 @@ int main  (){
 		if (!toks) {
 			printf ("input didnot parsed !! \n");
 			free (main_input);
+			free (input);
 			continue;
 		}
 
@@ -144,9 +172,9 @@ int main  (){
 		}
 	//	printf ("%d", (int)size);
 		// !!!!!!!!!!!! seg fault
-		printf ("this is after postfix_conv -> \n");
-		postfix_conversion (toks, (int)main_size);
-		cleanToken (toks);
+		// print the postfix !!
+		char** postfix = postfix_conversion (toks, (int)main_size);
 		free (main_input);
+		free (input);
 	}
 }

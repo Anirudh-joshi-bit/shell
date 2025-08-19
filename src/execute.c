@@ -59,6 +59,7 @@ char* execute (char* operand1,  char* operand2, char* operator){
 
 
 int process_postfix (char* postfix, int size){
+	// this is a problem !!! donot loose the data and make a stirng (postfix) then parse it !!!
 	char** tok = parse (postfix, size);
 	char** tok_iter = tok;
 	stack_t* st;
