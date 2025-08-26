@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdio.h>
+#include <fcntl.h>
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -11,6 +12,7 @@
 #define MAXNUM_COMMAND 100
 #define MAXLEN_INPUT 2048
 #define MAXLEN_DELIM 30
+#define MAXLEN_OUTPUT 1048576
 
 // structs ->
 typedef struct __node_t {
