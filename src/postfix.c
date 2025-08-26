@@ -1,36 +1,16 @@
 #include "header.h"
 
-bool isOper (char* op){
-	return !strcmp(op, "(") || !strcmp(op, ")") || !strcmp(op, "<") || !strcmp(op, "<<") || !strcmp(op, ">") || !strcmp(op, ">>") || !strcmp(op, "|") || !strcmp(op, "&") || !strcmp(op, ";");
-}
-
-int getPrecedence (char* oper){
-	if (!strcmp(oper, "(") || !strcmp(oper, ")")) return -1;
-	if (!strcmp(oper, "<") || !strcmp(oper, "<<") || !strcmp(oper, ">") || !strcmp(oper, ">>")) return 3;
-	if (!strcmp(oper, "|")) return 2;
-	if (!strcmp(oper, "&")) return 1;
-	if (!strcmp(oper, ";")) return 0;
-
-	return -1;
-}
-
-
-
 char** postfix_conversion (char** toks, int input_size){
 	stack_t* st = malloc(sizeof (stack_t));
 	stack_init (st);
 	char** tok_iter = toks;
 
 	stack_push(st, "(");
-	// to do
-	//
-	//
-	//
-	//
-	//
+
 // dont push the string into a string but to a 2d string
-// so that no datra is lost  => insert the string into toks
-	char** toks_postfix = malloc (MAXNUM_COMMAND);
+// so that no data is lost  => insert the string into toks
+
+	char** toks_postfix = malloc (MAXNUM_COMMAND * sizeof (char**));
 
 	char** tok_iter_res = toks_postfix;
 
@@ -75,10 +55,10 @@ char** postfix_conversion (char** toks, int input_size){
 		tok_iter_res ++;
 		stack_pop(st);
 	}
+	*tok_iter_res = NULL;
 
 	free (st);
-	free (toks);
-
+	cleanToken(toks, MAXNUM_COMMAND);
 
 	return toks_postfix;
 }

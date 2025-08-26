@@ -1,18 +1,5 @@
 #include "header.h"
 
-void cleanToken (char** tok){
-
-	if (!tok) return;
-	int i = 0;
-	while (i<MAXNUM_COMMAND) free(tok[i++]);
-	free (tok);
-}
-
-int getOperNum (char a, char b){
-	if ((a == '<' && b == '<') || (a == '>' && b == '>')) return 2;
-	return a=='|' ||  a== '<' ||  a=='>' ||  a=='(' ||  a==')' ||  a=='&' ||  a==';';
-}
-
 char** parse (char* input, int size){
 	// preblem (was) ->  malloc (MAXNUM_COMMAND) -> wrong
 	char** tokens = malloc (MAXNUM_COMMAND * sizeof (char*));
@@ -26,7 +13,7 @@ char** parse (char* input, int size){
 		int val = getOperNum (input[i], input[i+1]);
 		if (col >= MAXLEN_COMMAND-1) {
 			printf ("too big command !! 1\n");
-			if (tokens) cleanToken (tokens);
+			if (tokens) cleanToken (tokens, MAXNUM_COMMAND);
 			return NULL;
 		}
 		if (!val) tokens[row][col++] = input[i];
@@ -40,7 +27,7 @@ char** parse (char* input, int size){
 			col = 0;
 			if (row >= MAXNUM_COMMAND-1) {
 				printf ("too big command !! 2 \n");
-				if (tokens) cleanToken (tokens);
+				if (tokens) cleanToken (tokens, MAXNUM_COMMAND);
 				return NULL;
 			}
 			if (val == 1){

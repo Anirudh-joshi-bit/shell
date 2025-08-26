@@ -1,35 +1,15 @@
 #include "header.h"
 
-int string_append (char* dest, char* target, int dest_end, int dest_size){
-
-	char* target_it = target;
-
-	// delete headint spaces
-	while (*target_it && *target_it == ' ') target_it++;
-
-
-	while (dest_end < dest_size && *target_it){
-		if (dest_end >= dest_size) return -1;
-		dest[dest_end++] = *target_it;
-		target_it ++;
-	}
-	return dest_end;
-}
-
-
-
-
-
 int main  (){
 
 	while (true){
 
-		char* main_input = malloc (1024);
-		size_t main_size = 1024;
+		char* main_input = malloc (MAXLEN_INPUT);
+		size_t main_size = MAXLEN_INPUT;
 		int main_iter = 0;
 
-		char* input = malloc (1024);
-		int size = 1024;
+		char* input = malloc (MAXLEN_INPUT);
+		int size = MAXLEN_INPUT;
 
 		fgets (input, size, stdin);
 		int error_found = 0;
@@ -55,19 +35,18 @@ int main  (){
 				main_input[main_iter++] = '<';
 				main_input[main_iter++] = '<';
 
-					char* delim = malloc (20);
-					int size_delim = 20;
-					i+=2;
+				char* delim = malloc (MAXLEN_DELIM);
+				i+=2;
 
-					int del_iter = 0;
+				int del_iter = 0;
 
-					while (i<size && input[i] == ' ') i++;
-					if (i == size-1) {
-						perror ("no delimeter found !!\n");
-						free (delim);
-						error_found = 1;
-						break;
-					}
+				while (i<size && input[i] == ' ') i++;
+				if (i == size-1) {
+					perror ("no delimeter found !!\n");
+					free (delim);
+					error_found = 1;
+					break;
+				}
 				while (i<size){
 
 					if (input[i] == ' ') {
@@ -92,8 +71,8 @@ int main  (){
 				printf ("delim = %s\n", delim);
 
 				// get line ->
-				char* temp = malloc (1024);
-				int size_temp = 1024;
+				char* temp = malloc (MAXLEN_COMMAND);
+				int size_temp = MAXLEN_COMMAND;
 				fgets(temp, size_temp, stdin);
 
 				while (strcmp(delim, temp)){
@@ -151,9 +130,6 @@ int main  (){
 
 		// handling << -> done
 
-		main_size = strlen (main_input);
-
-
 		 main_size = strlen (main_input);
 
 		char** toks = parse(main_input, (int)main_size);
@@ -174,6 +150,21 @@ int main  (){
 		// !!!!!!!!!!!! seg fault
 		// print the postfix !!
 		char** postfix = postfix_conversion (toks, (int)main_size);
+
+		char** post = postfix;
+		while (*post){
+			printf ("%s\n", *post);
+			post++;
+
+		}
+
+		post = postfix;
+		while (*post) {
+			char* temp = *post;
+			free (temp);
+			post++;
+		}
+		free (postfix);
 		free (main_input);
 		free (input);
 	}

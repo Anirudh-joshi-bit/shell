@@ -1,5 +1,7 @@
 CXX = gcc
-FLAGS = -Wall -Werror -o3 -g -fsanitize=address
+
+FLAGS = -Wall -Werror -o3 -g
+#FLAGS = -Wall -Werror -o3 -g -fsanitize=address
 
 BUILD_FOLDER = build
 SRC_FOLDER = src
@@ -12,11 +14,11 @@ OUTPUT = $(BUILD_FOLDER)/SHELL
 
 all : $(OUTPUT)
 
-$(OUTPUT) : $(SRC_FILES)
-	$(CXX) -g $(SRC_FILES) -o $(OUTPUT)
+#$(OUTPUT) : $(SRC_FILES)
+#	$(CXX) -g $(SRC_FILES) -o $(OUTPUT)
 
-#$(OUTPUT): $(BUILD_FILES)
-#	$(CXX) $(FLAGS)  $(BUILD_FILES) -o $(OUTPUT)
+$(OUTPUT): $(BUILD_FILES)
+	$(CXX) $(FLAGS)  $(BUILD_FILES) -o $(OUTPUT)
 
 $(BUILD_FOLDER)/%.o : $(SRC_FOLDER)/%.c
 	$(CXX) $(FLAGS) -c $^ -o $@

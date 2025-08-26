@@ -10,75 +10,87 @@
 // to open a file use "open()" syscall that returns the file descriptor of that opened file
 // pipe the output os command into that file using "pipe()"
 
-char* pipe_command (char* operand1, char* operand2, char* operator){
+void input_redir_command (char* operand1, char* operand2){
 
-	return NULL;
 
 }
 
-//  > ->
-//  this is the output redirection operator in shell
-//  what it does is this sends the standard output to a file => the second operand must be a file
-//
-//  >> ->
-//
-//  < ->
-//
-//
-//  << ->
-//		here document operator
-//		this is a tricky one     it does not take a single line
-//		it takes the line startinf from a delimiter and read all the lines until
-//		the next delimeter !! meaning we cannot just pass aa single line to the
-//		command
-//
-//		how can we handle this case !!
-//		1. while taking input, check if the command is << or not
-//		if yes  then take the first word and make it as the delimeter
-//		take each line as input until the next << is not encountered
-//
-//
-//		but it can be used for something like -> cat <<EOF
-//														line1
-//														line2
-//														EOF | grep "line1"
-//		this can be handled by checking if there is << present in the current
-//		input line if yes then make a while loop until ' ' or '\0' if space is
-//		found then print an error message
-//
-//		if this is the null char then make a while loop until hext delimeter if
-//		not found !
-//		then insert each char into a string and pass it to the respective fun
+void output_redir_command (char* operand1, char* operand2){
 
+}
+
+void append_output_command (char* operand1, char* oprand2){
+
+}
+
+void here_document_command (char* operand1, char* operand2){
+
+}
+
+void pipe_command (char* operand1, char* operand2){
+
+}
+
+void background_exe_command (char* operand1, char* operand2){
+
+}
+
+
+char* launch_command (char* operator, char* operand1, char* operand2){
+
+
+
+	char* output = NULL;
+	if (!strcmp (operator, "<")) {
+
+	}
+	if (!strcmp (operator, ">")){
+
+	}
+	if (!strcmp (operator, ">>")) {
+
+	}
+	if (!strcmp (operator, "<<")) {
+
+	}
+	if (!strcmp (operator, "|")) {
+
+	}
+	if (!strcmp (operator, "&")) {
+
+	}
+	return output ;
+}
+
+/*
+ *	<
+ *		input redirection
+ *		redirects file into a program stdinput
+ *
+ *	>
+ *		output rediretction
+ *		reditect the output of a program to a file
+ *
+ *	>>
+ *		append output
+ *		append the output to a file
+ *
+ *	<<
+ *		here document
+ *		everyt thing until the delim is passed as stdin to the command
+ *
+ *	|
+ *		pipe
+ *		passes the output of a command as input of another command
+ *
+ *	&
+ *		background exe
+ *		exe in the background
+ *
+ */
 
 
 char* execute (char* operand1,  char* operand2, char* operator){
 
 	return NULL;
-}
-
-
-int process_postfix (char* postfix, int size){
-	// this is a problem !!! donot loose the data and make a stirng (postfix) then parse it !!!
-	char** tok = parse (postfix, size);
-	char** tok_iter = tok;
-	stack_t* st;
-
-	while (*tok_iter){
-
-		char *operand1 = NULL, *operand2 = NULL;
-		if (isOper (*tok_iter)){
-			operand2 = stack_top (st);
-			stack_pop(st);
-			if (st->size){
-				operand1 = stack_top (st);
-				stack_pop(st);
-			}
-
-			char* output = execute (operand1, operand2,* tok_iter);
-			stack_push (st, output);
-		}
-		tok_iter++;
-	}
-	return 0;
 }
