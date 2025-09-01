@@ -38,23 +38,23 @@ int delete_head (list_t* l){
 	return 0;
 }
 
-void stack_init (stack_t* st){
+void stack_init (stack_t_* st){
 
 	st->l = malloc (sizeof (list_t));
 	list_init(st->l);
 	st->size = 0;
 }
-void stack_push(stack_t* st, char* command){
+void stack_push(stack_t_* st, char* command){
 	insert_head (st->l, command);
 	st->size++;
 }
 
-int stack_pop (stack_t* st){
+int stack_pop (stack_t_* st){
 	if (delete_head (st->l)) return 1;
 	st->size--;;
 	return 0;
 }
-char* stack_top (stack_t* st){
+char* stack_top (stack_t_* st){
 	if (st->size == 0) return NULL;
 	return st->l->head->command;
 }

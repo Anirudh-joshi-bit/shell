@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <sys/wait.h>
 
 #define MAXLEN_COMMAND 100
 #define MAXNUM_COMMAND 100
@@ -26,21 +27,23 @@ typedef struct __list_t {
 typedef struct __stack_t {
 	list_t* l;
 	int size;
-}stack_t;
+}stack_t_;
 
 
 // functions ->
-void stack_init (stack_t*);
-int stack_pop(stack_t*);
-char* stack_top(stack_t*);
-void stack_push(stack_t*, char*);
+void stack_init (stack_t_*);
+int stack_pop(stack_t_*);
+char* stack_top(stack_t_*);
+void stack_push(stack_t_*, char*);
+int execute (char**);
 int getOperNum (char, char);
 bool isOper (char*);
 char** parse (char*, int);
 int getOperNum (char, char);
-void cleanToken (char**, int);
+void clean2Dstring(char**, int, int);
 int getPrecedence (char*);
 char** postfix_conversion (char**, int);
 char** filter(char**);
 int string_append (char*, char*, int, int);
-char** tokenise (char*, char*);
+char** tokenise (char*, char*, int*);
+void print_stack (stack_t_*);

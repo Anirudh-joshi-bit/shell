@@ -142,7 +142,7 @@ int main  (){
 
 			//printf ("hii");
 		char** it = toks;
-		while (*it){
+		while (strcmp (*it, "")){
 			printf ("%s\n", *it);
 			it++;
 		}
@@ -152,19 +152,14 @@ int main  (){
 		char** postfix = postfix_conversion (toks, (int)main_size);
 
 		char** post = postfix;
-		while (*post){
+		while (strcmp (*post, "")){
 			printf ("%s\n", *post);
 			post++;
 
 		}
+		execute (postfix);
 
-		post = postfix;
-		while (*post) {
-			char* temp = *post;
-			free (temp);
-			post++;
-		}
-		free (postfix);
+		printf ("command exe done \n");
 		free (main_input);
 		free (input);
 	}

@@ -1,45 +1,54 @@
 #include "header.h"
 
 char** postfix_conversion (char** toks, int input_size){
-	stack_t* st = malloc(sizeof (stack_t));
-	stack_init (st);
+	stack_t_ st;
+	stack_init (&st);
 	char** tok_iter = toks;
 
-	stack_push(st, "(");
+	stack_push(&st, "(");
 
 // dont push the string into a string but to a 2d string
 // so that no data is lost  => insert the string into toks
 
-	char** toks_postfix = malloc (MAXNUM_COMMAND * sizeof (char**));
+	char** toks_postfix = malloc (MAXNUM_COMMAND * sizeof (char*));
 
 	char** tok_iter_res = toks_postfix;
 
 
 	// first check if the given input as a valid paranthesis or not
 
-	while (*tok_iter) {
+	while (strcmp ("", *tok_iter)) {
 		if (isOper (*tok_iter)){
 
 			if (!strcmp (*tok_iter, ")")){
-				while (strcmp (stack_top (st), "(")){
-					*tok_iter_res = strdup (stack_top (st));
+				while (strcmp (stack_top (&st), "(")){
+					*tok_iter_res = strdup (stack_top (&st));
+
 					tok_iter_res++;
-					assert(!stack_pop(st));
+					stack_pop(&st);
 				}
-				assert (!stack_pop(st));
+				if (st.size == 1) {
+					perror ("ERROR .... bad paranthesis\n");
+					clean2Dstring (toks_postfix, 0, MAXNUM_COMMAND);
+					return NULL;
+				}
+
+				stack_pop(&st);
 			}
 			// we dont want to remove anything if the current char is "(";
-			else if (!strcmp (*tok_iter, "(")) stack_push (st, *tok_iter);
+			else if (!strcmp (*tok_iter, "(")) stack_push (&st, *tok_iter);
 			else{
 
-				while (getPrecedence(stack_top (st)) >= getPrecedence (*tok_iter)){
-					*tok_iter_res  = strdup (stack_top (st));					// this is important as stack_pop () is freeing the memory
-																					// hence store a copy instead of the actual pointer;
+				while (getPrecedence(stack_top (&st)) >= getPrecedence (*tok_iter)){
+					*tok_iter_res  = strdup (stack_top (&st));
+					// this is important as stack_pop () is freeing the memory
+					// hence store a copy instead of the actual pointer;
+
 					tok_iter_res++;
 				// pop, append;
-					assert (!stack_pop (st));
+					stack_pop(&st);
 				}
-				stack_push(st, *tok_iter);
+				stack_push(&st, *tok_iter);
 			}
 		}
 		else {
@@ -50,15 +59,14 @@ char** postfix_conversion (char** toks, int input_size){
 
 		tok_iter ++;
 	}
-	while (st->size > 1){			// the last element is ( that we dont want to add to the string;
-		*tok_iter_res = strdup (stack_top (st));
+	while (st.size > 1){			// the last element is ( that we dont want to add to the string;
+		*tok_iter_res = strdup (stack_top (&st));
 		tok_iter_res ++;
-		stack_pop(st);
+		stack_pop(&st);
 	}
-	*tok_iter_res = NULL;
+	*tok_iter_res = strdup ("");				// empty string to terminate the postfix
 
-	free (st);
-	cleanToken(toks, MAXNUM_COMMAND);
+	clean2Dstring(toks, 0, MAXNUM_COMMAND);
 
 	return toks_postfix;
 }

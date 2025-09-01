@@ -22,7 +22,7 @@ int input_redir_command (char* operand1, char* operand2){
 	char** file_name = tokenise (operand2, " ", &size);
 	if (size > 1){
 		perror ("ERROR too many file names !! \n");
-		clean2Dstring(file_name, 0, size);
+		clean2Dstring(file_name, 0, size-1);
 		return -1;
 	}
 
@@ -30,7 +30,7 @@ int input_redir_command (char* operand1, char* operand2){
 
 	if (fd_file < 0){
 		perror ("file does not exits \n");
-		clean2Dstring(file_name, 0, size);
+		clean2Dstring(file_name, 0, size-1);
 													 	// MAXLEN_COMMAND = size of
 		return -1;										// 2d string returned by tokenise
 	}
@@ -250,18 +250,11 @@ int execute (char** postfix){
 					stack_pop(&st);
 				}
 				char* output = launch_command (*post_iter, operand1, operand2);
-				//printf ("hii %s\n is the output\n", output);
+				printf ("hii %s\n is the output\n", output);
 				if (output)  stack_push(&st, output);
-				if (operand1) free(operand1);
-				if (operand2) free(operand2);
-				free(*post_iter);
-
 			}
 			else {
 				perror ("ERROR      operand2 is null\n");
-				if (operand1) free(operand1);
-				if (operand2) free(operand2);
-				free(*post_iter);
 				return 1;
 			}
 		}
@@ -281,7 +274,7 @@ int execute (char** postfix){
 		printf ("after the execution, size of stack is 0 !! which is not desired\n");
 		return -1;
 	}
-	printf ("%s\n this is the output ... \n", stack_top (&st));
+	//printf ("%s\n this is the output ... \n", stack_top (&st));
 
 	return 0;
 

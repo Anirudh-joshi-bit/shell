@@ -13,7 +13,7 @@ char** parse (char* input, int size){
 		int val = getOperNum (input[i], input[i+1]);
 		if (col >= MAXLEN_COMMAND-1) {
 			printf ("too big command !! 1\n");
-			if (tokens) cleanToken (tokens, MAXNUM_COMMAND);
+			clean2Dstring (tokens, 0, MAXNUM_COMMAND);
 			return NULL;
 		}
 		if (!val) tokens[row][col++] = input[i];
@@ -27,7 +27,7 @@ char** parse (char* input, int size){
 			col = 0;
 			if (row >= MAXNUM_COMMAND-1) {
 				printf ("too big command !! 2 \n");
-				if (tokens) cleanToken (tokens, MAXNUM_COMMAND);
+				clean2Dstring (tokens, 0, MAXNUM_COMMAND);
 				return NULL;
 			}
 			if (val == 1){
@@ -56,7 +56,6 @@ char** parse (char* input, int size){
 		tokens[row][col+1] = '\0';
 	}
 	//tokens[1+row][0] = '\0';
-	tokens [1+row] = NULL;
+	tokens [1+row] = strdup ("");
 	return tokens;
-
 }

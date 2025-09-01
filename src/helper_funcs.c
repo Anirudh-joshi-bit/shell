@@ -17,12 +17,15 @@ int string_append (char* dest, char* target, int dest_end, int dest_size){
 	return dest_end;
 }
 
-void cleanToken (char** tok, int size){
+void clean2Dstring (char** tok, int st, int size){
 
 	if (!tok) return;
-	int i = 0;
-	while (i<size) free(tok[i++]);
-	free (tok);
+	for (int i=st; i<size; i++){
+		if (tok[i])
+			free (tok[i]);
+	}
+	if (!st)
+		free(tok);
 }
 
 int getOperNum (char a, char b){
@@ -45,31 +48,48 @@ int getPrecedence (char* oper){
 	return -1;
 }
 
-char** tokenise (char* string, char* delim){
+char** tokenise (char* string, char* delim, int* size){
 
 	char** toks = malloc (MAXLEN_COMMAND * sizeof (char*));
 	int tok_iter = 0;
-	char* tok = strtok (string, " ") ;
+	char* tok = strtok (string, delim);
+
 	while (tok){
 
 		toks[tok_iter++] = strdup (tok);
 		if (tok_iter >= MAXLEN_COMMAND){
 
 			perror ("too big command ERROR \n");
+			clean2Dstring (toks, 0, MAXLEN_COMMAND);
 			return NULL;
 
 		}
-		tok = strtok (NULL, " ");
+		tok = strtok (NULL, delim);
 
 	}
+
+	*size = tok_iter;
 	toks[tok_iter++] = NULL;
 
-	for (; tok_iter < MAXLEN_COMMAND; tok_iter++){
-
-		free (toks[tok_iter]);
-
-	}
-
 	return toks;
+
+}
+
+
+void print_stack (stack_t_* st){
+	stack_t_ st_;
+	stack_init (&st_);
+
+	printf ("printing stack.... \n");
+	while (st->size){
+		stack_push (&st_, stack_top(st));
+		printf ("%s\n", stack_top (&st_));
+		stack_pop(st);
+	}
+	while (st_.size){
+
+		stack_push (st, stack_top (&st_));
+		stack_pop(&st_);
+	}
 
 }
