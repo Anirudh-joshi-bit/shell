@@ -1,5 +1,11 @@
 #pragma once
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
+
+#include <termios.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <string.h>
@@ -9,6 +15,13 @@
 #include <stdbool.h>
 #include <sys/wait.h>
 
+#define RED "\x1b[31;40m"
+#define	BLUE "\x1b[34;40m"
+#define GREEN "\x1b[32;40m"
+
+#define APPEND_OUTPUT 1
+#define TRUNC_OUTPUT 0
+#define MAXLEN_PWD 200
 #define MAXLEN_COMMAND 100
 #define MAXNUM_COMMAND 100
 #define MAXLEN_INPUT 2048
@@ -31,6 +44,7 @@ typedef struct __stack_t {
 
 
 // functions ->
+int tab_completion(char* input, int size);
 void stack_init (stack_t_*);
 int stack_pop(stack_t_*);
 char* stack_top(stack_t_*);
@@ -38,7 +52,7 @@ void stack_push(stack_t_*, char*);
 int execute (char**);
 int getOperNum (char, char);
 bool isOper (char*);
-char** parse (char*, int);
+char** parse (char*, int, int*);
 int getOperNum (char, char);
 void clean2Dstring(char**, int, int);
 int getPrecedence (char*);
@@ -47,3 +61,4 @@ char** filter(char**);
 int string_append (char*, char*, int, int);
 char** tokenise (char*, char*, int*);
 void print_stack (stack_t_*);
+int exe_one_command(char*);

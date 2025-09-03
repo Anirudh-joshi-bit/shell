@@ -1,6 +1,6 @@
 #include "header.h"
 
-char** parse (char* input, int size){
+char** parse (char* input, int size, int* tok_size){
 	// preblem (was) ->  malloc (MAXNUM_COMMAND) -> wrong
 	char** tokens = malloc (MAXNUM_COMMAND * sizeof (char*));
 
@@ -56,6 +56,7 @@ char** parse (char* input, int size){
 		tokens[row][col+1] = '\0';
 	}
 	//tokens[1+row][0] = '\0';
-	tokens [1+row] = strdup ("");
+	tokens [++row] = strdup ("");
+	*tok_size = row;
 	return tokens;
 }

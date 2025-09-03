@@ -1,5 +1,21 @@
 #include "header.h"
 
+// why we need some thing to be written in fd[1] to be able to read from fd[0]
+/*
+
+	if a process wants to read form fd[0] but nothing is written to fds[1],
+	in this case, the process (reader) will block until
+		1. something is written to fd[1]
+		2. all writer close fd[1]
+
+	to solve this probelm, use pipe2 ( fds, O_NOBLOCK );
+	to avoid any blocking
+
+	to do so , we ned to define _GNU_SOURCE   (if _GNU_SOURCE is not already declared)
+*/
+
+
+
 // postfix is not NULL terminating instead "" terminating
 
 int fds[2];
@@ -65,6 +81,7 @@ int input_redir_command (char* operand1, char* operand2){
 
 		int st;
 		wait (&st);
+		printf ("this is the default print statement");
 
 
 		close (fd_file);
@@ -89,102 +106,164 @@ int input_redir_command (char* operand1, char* operand2){
 	return 0;
 }
 
-int output_redir_command (char* operand1, char* operand2){
-	printf ("this is output_redir_command \n");
-	return 0;
-
-}
-
-int append_output_command (char* operand1, char* oprand2){
-	printf ("this is append_output_command\n");
-	return 0;
-
-}
-
-int here_document_command (char* operand1, char* operand2){
-	printf ("this is here_document_command\n");
-	return 0;
-
-}
-
-int pipe_command (char* operand1, char* operand2){
-	printf ("this is pipe_command\n");
-	return 0;
-
-}
-
-int background_exe_command (char* operand1, char* operand2){
-	printf ("this is background_exe_command\n");
-	return 0;
-
-}
+int output_command (char* operand1, char* operand2 , int flag){
 
 
-char* launch_command (char* operator, char* operand1, char* operand2){
+	int tok_size  = 0;
+	char** file_name = tokenise (operand2, " \n\t", &tok_size);
 
-	printf ("inside the launch command \n");
-	// we can use multiple pipes to a single fds[2]   no worries
-	pipe(fds);
+	if (tok_size > 1){
 
-
-	// dup will open the file present in STDOUT_FILENO in a different fd
-	// that fd is stdout_cp
-	int stdout_cpy = dup(STDOUT_FILENO);
-	if (stdout_cpy < 0){
-		perror ("ERROR in stdout_cpy in launch command \n");
-		close (fds[0]);
-		close (fds[1]);
-		return NULL;
+		perror("ERROR multiple file name \n");
+		clean2Dstring (file_name, 0, tok_size);
+		return -1;
 	}
-	// set the stdout to fd 1 so that output can be read
-	// child will copy the fds meaning if fds[0] is opened in fd 0 as parent child will also open fds[0] in fd 0
-	if (dup2 (fds[1], STDOUT_FILENO )< 0){
-		perror ("ERROR in dup2 fd[1] in launch command \n");
-		close (fds[0]);
-		close (fds[1]);
-		close (stdout_cpy);
-		return NULL;
+	int output_file_fd;
+
+	if (flag == TRUNC_OUTPUT)
+		output_file_fd = open (file_name[0],	O_TRUNC | O_CREAT | O_WRONLY , 0777);
+	else
+		output_file_fd = open (file_name[0], O_CREAT | O_WRONLY | O_APPEND , 0777);
+
+	clean2Dstring (file_name, 0, tok_size);
+
+	if (output_file_fd < 0){
+
+		perror ("ERROR file not found");
+		return -1;
 	}
 
-	char* output = malloc (MAXLEN_OUTPUT);
-	if (!strcmp (operator, "<")) {
-		if (input_redir_command(operand1, operand2)){
-			perror ("ERROR in input redir\n");
-			close (fds[1]);
+	int stdout_cp = dup (STDOUT_FILENO);
+	if (stdout_cp < 0){
+
+		perror ("ERROR in creating copy of STDOOUT_FILENO inside output_redir_command function \n");
+		close (stdout_cp);
+		exit(1);
+
+	}
+
+	if (dup2 (output_file_fd, STDOUT_FILENO) < 0){
+		perror ("ERROR in opening the file in place of STDOUT_FILENO\n");
+		close (output_file_fd);
+		close (stdout_cp);
+		return -1;
+	}
+
+		int f = fork ();
+		if (f < 0){
+
+			// error
+
+			perror ("ERROR in fork in output redir !\n");
+			close (output_file_fd);
+			dup2 (stdout_cp, STDOUT_FILENO);
+			close (stdout_cp);
+			return -1;
+		}
+		else if (f == 0){
+
+			// child process;
+
+			char** args = tokenise (operand1, " \n\t", &tok_size);
+			execvp (args[0], args);
+
+			perror ("ERROR command not found\n");
+			exit (1);
+
+		}
+		else {
+
+			// parent process
+
+			int st = 0;
+			wait (&st);
+		}
+
+		close (output_file_fd);
+		dup2(stdout_cp, STDOUT_FILENO);
+		close (stdout_cp);
+		return 0;
+
+	}
+
+	int here_document_command (char* operand1, char* operand2){
+		printf ("this is here_document_command\n");
+		return 0;
+
+	}
+
+	int pipe_command (char* operand1, char* operand2){
+		printf ("this is pipe_command\n");
+		return 0;
+
+	}
+
+	int background_exe_command (char* operand1, char* operand2){
+		printf ("this is background_exe_command\n");
+		return 0;
+
+	}
+
+
+	char* launch_command (char* operator, char* operand1, char* operand2){
+
+		printf ("inside the launch command \n");
+		// we can use multiple pipes to a single fds[2]   no worries
+		pipe2(fds, O_NONBLOCK);
+
+
+		// dup will open the file present in STDOUT_FILENO in a different fd
+		// that fd is stdout_cp
+		int stdout_cpy = dup(STDOUT_FILENO);
+		if (stdout_cpy < 0){
+			perror ("ERROR in stdout_cpy in launch command \n");
 			close (fds[0]);
-			dup2 (stdout_cpy, STDOUT_FILENO);
+			close (fds[1]);
+			return NULL;
+		}
+		// set the stdout to fd 1 so that output can be read
+		// child will copy the fds meaning if fds[0] is opened in fd 0 as parent child will also open fds[0] in fd 0
+		if (dup2 (fds[1], STDOUT_FILENO )< 0){
+			perror ("ERROR in dup2 fd[1] in launch command \n");
+			close (fds[0]);
+			close (fds[1]);
 			close (stdout_cpy);
 			return NULL;
 		}
-	}
-	if (!strcmp (operator, ">")){
 
-		output_redir_command(operand1, operand2);
-	}
-	if (!strcmp (operator, ">>")) {
+		char* output = malloc (MAXLEN_OUTPUT);
+		if (!strcmp (operator, "<")) {
+			if (input_redir_command(operand1, operand2)){
+				perror ("ERROR in input redir\n");
+				close (fds[1]);
+				close (fds[0]);
+				dup2 (stdout_cpy, STDOUT_FILENO);
+				close (stdout_cpy);
+				return NULL;
+			}
+		}
+		else if (!strcmp (operator, ">")){
 
-		append_output_command(operand1, operand2);
-	}
-	if (!strcmp (operator, "<<")) {
+			output_command(operand1, operand2, TRUNC_OUTPUT);
+		}
+		else if (!strcmp (operator, ">>")) {
 
-		here_document_command(operand1, operand2);
-	}
-	if (!strcmp (operator, "|")) {
+			output_command(operand1, operand2, APPEND_OUTPUT);
+		}
+		else if (!strcmp (operator, "<<")) {
 
-		pipe_command(operand1, operand2);
-	}
-	if (!strcmp (operator, "&")) {
+			here_document_command(operand1, operand2);
+		}
+		else if (!strcmp (operator, "|")) {
 
-		background_exe_command(operand1, operand2);
-	}
-	if (read (fds[0], output, MAXLEN_OUTPUT) < 0){
-		perror ("ERROR in read in launch command \n");
-		close (fds[0]);
-		close (fds[1]);
-		dup2 (stdout_cpy, STDOUT_FILENO);
-		close (stdout_cpy);
-		return NULL;
-	}
+			pipe_command(operand1, operand2);
+		}
+		else if (!strcmp (operator, "&")) {
+
+			background_exe_command(operand1, operand2);
+		}
+
+	read (fds[0], output, MAXLEN_OUTPUT);
 
 	close (fds[0]);
 	close (fds[1]);
@@ -250,7 +329,6 @@ int execute (char** postfix){
 					stack_pop(&st);
 				}
 				char* output = launch_command (*post_iter, operand1, operand2);
-				//printf ("hii %s\n is the output\n", output);
 				if (output)  stack_push(&st, output);
 				if (operand1) free(operand1);
 				if (operand2) free(operand2);
@@ -278,11 +356,11 @@ int execute (char** postfix){
 	}
 
 	if (st.size == 0) {
-		printf ("after the execution, size of stack is 0 !! which is not desired\n");
-		return -1;
+		return 0;
 	}
-	printf ("%s\n this is the output ... \n", stack_top (&st));
+	printf ("%s\n", stack_top (&st));
 
+	// handle single command ->
 	return 0;
 
 }

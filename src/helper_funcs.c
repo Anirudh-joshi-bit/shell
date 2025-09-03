@@ -93,3 +93,27 @@ void print_stack (stack_t_* st){
 	}
 
 }
+int exe_one_command (char* command){
+
+	int size = 0, st = 0;
+	char** args = tokenise (command, " \n\t", &size);
+
+	int f = fork ();
+	if (f == 0){
+		execvp (args[0], args);
+		perror ("command not found \n");
+		exit(1);
+	}
+	else if (f > 0){
+		wait (&st);
+		if (st){
+			perror ("ERROR in launching command \n");
+			return -1;
+		}
+	}
+	else {
+		perror ("ERROR in fork in exe_one_command \n");
+		return -1;
+	}
+	return 0;
+}

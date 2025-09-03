@@ -1,17 +1,32 @@
 #include "header.h"
 
 int main  (){
-
+    printf("██████   ██   ██  ███████  ██       ██       \n");
+    printf("██       ██   ██  ██       ██       ██       \n");
+    printf("██       ███████  █████    ██       ██       \n");
+    printf("██████   ██   ██  ██       ██       ██       \n");
+    printf("    ██   ██   ██  ██       ██       ██       \n");
+    printf("██████   ██   ██  ███████  ███████  ███████  \n");
 	while (true){
 
+		char pwd[MAXLEN_PWD];
+		getcwd (pwd, MAXLEN_PWD);
+		printf ("__%s__ $ ", pwd);
+
+
 		char* main_input = malloc (MAXLEN_INPUT);
-		size_t main_size = MAXLEN_INPUT;
+		int main_size = MAXLEN_INPUT;
 		int main_iter = 0;
 
 		char* input = malloc (MAXLEN_INPUT);
 		int size = MAXLEN_INPUT;
 
-		fgets (input, size, stdin);
+
+		// tab completion implementation
+
+		int st = tab_completion (main_input, main_size);
+
+	//	fgets (input, size, stdin);
 		int error_found = 0;
 		size = strlen (input);
 
@@ -132,7 +147,9 @@ int main  (){
 
 		 main_size = strlen (main_input);
 
-		char** toks = parse(main_input, (int)main_size);
+		 // for handling single command
+		 int tok_size = 0;
+		char** toks = parse(main_input, (int)main_size, &tok_size);
 		if (!toks) {
 			printf ("input didnot parsed !! \n");
 			free (main_input);
@@ -146,6 +163,15 @@ int main  (){
 			printf ("%s\n", *it);
 			it++;
 		}
+
+		if (tok_size == 1){
+			// no operator !
+			if (exe_one_command (toks[0])){
+				perror ("ERROR in executing \n");
+			}
+			continue;
+		}
+
 	//	printf ("%d", (int)size);
 		// !!!!!!!!!!!! seg fault
 		// print the postfix !!
