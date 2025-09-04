@@ -24,9 +24,9 @@ int main  (){
 
 		// tab completion implementation
 
-		int st = tab_completion (main_input, main_size);
+		//int st = tab_completion (main_input, main_size);
 
-	//	fgets (input, size, stdin);
+		fgets (input, size, stdin);
 		int error_found = 0;
 		size = strlen (input);
 
