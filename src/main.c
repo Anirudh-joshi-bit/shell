@@ -35,12 +35,17 @@ char** sanitise (char** toks, int size){
 
 
 int main  (){
-    printf("██████   ██   ██  ███████  ██       ██       \n");
-    printf("██       ██   ██  ██       ██       ██       \n");
-    printf("██       ███████  █████    ██       ██       \n");
-    printf("██████   ██   ██  ██       ██       ██       \n");
-    printf("    ██   ██   ██  ██       ██       ██       \n");
-    printf("██████   ██   ██  ███████  ███████  ███████  \n");
+
+const char *art =
+"███████╗██╗  ██╗███████╗██╗     ██╗     \n"
+"██╔════╝██║  ██║██╔════╝██║     ██║     \n"
+"███████╗███████║█████╗  ██║     ██║     \n"
+"╚════██║██╔══██║██╔══╝  ██║     ██║     \n"
+"███████║██║  ██║███████╗███████╗███████╗\n"
+"╚══════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝\n";
+printf("%s", art);
+
+
 	while (true){
 
 		char pwd[MAXLEN_PWD];
@@ -183,12 +188,12 @@ int main  (){
 		// remove the entries with no actual command (only spaces and one \n at the end)
 
 		char** parsed = sanitise (toks, MAXNUM_COMMAND);
-		char** t = parsed;
-		while (strcmp (*t, "")){
-			printf ("%s\n", *t);
-			t++;
-
-		}
+//		char** t = parsed;
+//		while (strcmp (*t, "")){
+//			printf ("%s\n", *t);
+//			t++;
+//
+//		}
 //
 //
 //
@@ -203,12 +208,12 @@ int main  (){
 
 		char** postfix = postfix_conversion (parsed, (int)main_size);
 
-		char ** post = postfix;
-		while (strcmp (*post, "")){
-
-			printf ("%s\n", *post);
-			post++;
-		}
+//		char ** post = postfix;
+//		while (strcmp (*post, "")){
+//
+//			printf ("%s\n", *post);
+//			post++;
+//		}
 
 		clean2Dstring(parsed, 0, MAXNUM_COMMAND);
 //

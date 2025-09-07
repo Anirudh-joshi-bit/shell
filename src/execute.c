@@ -155,7 +155,10 @@ int here_document_command (char* operand1, char* operand2, char** postfix, stack
 				perror ("open in heredoc command");
 				exit (-1);
 			}
+			fsync (fd);
+
 			write (fd, operand2, strlen (operand2));
+			lseek (fd, 0, SEEK_SET);
 
 			assert (dup2 (fd , STDIN_FILENO) == 0);
 
@@ -459,7 +462,7 @@ int execute (char** postfix){
 	if (st.size == 0) {
 		return 0;
 	}
-	printf ("%s is the stack top \n\n\n", stack_top (&st));
+	printf ("%s", stack_top (&st));
 	//free (stack_top (&st));
 	stack_pop(&st);
 
