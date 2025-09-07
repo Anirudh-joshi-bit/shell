@@ -32,6 +32,7 @@ int delete_head (list_t* l){
 	}
 	node_t* node = l->head;
 	l->head = l->head->next;
+	free (node->command);
 	free (node);
 	l->size--;
 
@@ -51,7 +52,7 @@ void stack_push(stack_t_* st, char* command){
 
 int stack_pop (stack_t_* st){
 	if (delete_head (st->l)) return 1;
-	st->size--;;
+	st->size--;
 	return 0;
 }
 char* stack_top (stack_t_* st){

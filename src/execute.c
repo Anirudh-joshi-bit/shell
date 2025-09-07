@@ -29,7 +29,7 @@ int fds[2];
 // to open a file use "open()" syscall that returns the file descriptor of that opened file
 // pipe the output os command into that file using "pipe()"
 
-int input_redir_command (char* operand1, char* operand2){
+int input_redir_command (char* operand1, char* operand2, char** postfix, stack_t_* st){
 	int size = 0;
 	if (operand1 == NULL || operand2 == NULL){
 		perror ("ERROR bad command and operations \n");
@@ -50,63 +50,42 @@ int input_redir_command (char* operand1, char* operand2){
 													 	// MAXLEN_COMMAND = size of
 		return -1;										// 2d string returned by tokenise
 	}
-	int stdin_cp = dup(STDIN_FILENO);
-
-	if (stdin_cp < 0){
-		close (fd_file);
-		perror ("error in dup STDIN_FILENO");
-
-		return -1;
-	}
-
-	if (dup2 (fd_file, STDIN_FILENO) < 0) {
-		perror ("error in dup2");
-		close (fd_file);
-		close (stdin_cp);
-		return -1;
-	}
+	clean2Dstring (file_name, 0, size);
 
 	int f = fork ();
 
 	if (f == 0) {				// child proces
 
-		char** tokens = tokenise (operand1, " \n\t", &size);
-		execvp (tokens[0], tokens);
+		// replace the default stdin -> file_name;
+		assert (dup2 (fd_file, STDIN_FILENO) >= 0);
+		close (fd_file);
+
+		char** args = tokenise (operand1, " \n\t", &size);
+
+		clean2Dstring (postfix, 0, MAXNUM_COMMAND);
+		while (st->size) stack_pop(st);
+
+		execvp (args[0], args);
 
 		perror ("command not found !! \n");
+		clean2Dstring (args, 0, size);
 		exit (-1);
-
 	}
 	else if (f > 0){
 
 		int st;
 		wait (&st);
-		printf ("this is the default print statement");
 
-
-		close (fd_file);
-		if (dup2 (stdin_cp, STDIN_FILENO) < 0){
-			perror ("error in parent dup2 in input redir command\n");
-			return -1;
-		}
-		close (stdin_cp);
 	}
 	else {				// error in fork !!
 
 		perror ("ERROR in fork in input redirection\n");
-		if (dup2 (stdin_cp, STDIN_FILENO) < 0){
-			perror ("ERROR in dup2\n");
-			close (fd_file);
-			return -1;
-		}
-		close (fd_file);
-		return -1;
+		exit (-1);
 	}
-
 	return 0;
 }
 
-int output_command (char* operand1, char* operand2 , int flag){
+int output_command (char* operand1, char* operand2 , int flag, char** postfix, stack_t_* st){
 
 
 	int tok_size  = 0;
@@ -133,83 +112,187 @@ int output_command (char* operand1, char* operand2 , int flag){
 		return -1;
 	}
 
-	int stdout_cp = dup (STDOUT_FILENO);
-	if (stdout_cp < 0){
-
-		perror ("ERROR in creating copy of STDOOUT_FILENO inside output_redir_command function \n");
-		close (stdout_cp);
-		exit(1);
-
-	}
-
-	if (dup2 (output_file_fd, STDOUT_FILENO) < 0){
-		perror ("ERROR in opening the file in place of STDOUT_FILENO\n");
-		close (output_file_fd);
-		close (stdout_cp);
-		return -1;
-	}
-
-		int f = fork ();
-		if (f < 0){
-
+	int f = fork ();
+	if (f < 0){
 			// error
+		perror ("ERROR in fork !!");
+		exit (-1);
 
-			perror ("ERROR in fork in output redir !\n");
-			close (output_file_fd);
-			dup2 (stdout_cp, STDOUT_FILENO);
-			close (stdout_cp);
-			return -1;
-		}
-		else if (f == 0){
+	}
+	else if (f == 0){
 
 			// child process;
+		assert (dup2 (output_file_fd, STDOUT_FILENO));
+		close (output_file_fd);
 
-			char** args = tokenise (operand1, " \n\t", &tok_size);
+		char** args = tokenise (operand1, " \n\t", &tok_size);
+
+		clean2Dstring (postfix, 0, MAXNUM_COMMAND);
+		while (st->size) stack_pop(st);
+
+		execvp (args[0], args);
+
+		perror ("ERROR command not found\n");
+		exit (1);
+
+	}
+	else {
+
+			// parent process
+		int st = 0;
+		wait (&st);
+	}
+	return 0;
+}
+
+int here_document_command (char* operand1, char* operand2, char** postfix, stack_t_* st){
+
+		int f = fork ();
+		if (f == 0){
+
+			int fd = open ("/tmp", O_TMPFILE | O_RDWR | O_EXCL);
+			if (fd < 0){
+				perror ("open in heredoc command");
+				exit (-1);
+			}
+			write (fd, operand2, strlen (operand2));
+
+			assert (dup2 (fd , STDIN_FILENO) == 0);
+
+
+			int size = 0;
+			char** args = tokenise (operand1, " \n\t", &size);
+
 			execvp (args[0], args);
 
-			perror ("ERROR command not found\n");
+			perror ("execvp heredoc");
+			exit(1);
+
+		}
+		else if (f > 0){
+			int st = 0;
+			wait (&st);
+			if (st){
+				perror ("heredoc");
+				return -1;
+			}
+
+
+		}
+		else if (f < 0){
+			perror ("fork in heredoc");
+			exit (-1);
+		}
+		return 0;
+
+	}
+
+int pipe_command (char* operand1, char* operand2, char** postfix, stack_t_* st){
+
+	// case one ->
+	// op1 = writer
+	// op2 = reader
+	// operand1 is a command and writes the output to fd1 and operand2 (must be a command)
+	// reads from fd0
+
+
+	// case2 ->
+	// operand1 is not a command but output of a different command , operand2 is a command wanting to read
+	// in this case we can make a tmpfile and call the second program to read from it;
+
+		int fds_pipe_command [2];
+		// operand1 -> command1
+		// operand2 -> command2
+
+		pipe (fds_pipe_command);
+
+		int f1=0, f2=0;
+		f1 = fork();
+
+		if (f1 == 0){
+
+			assert (dup2 (fds_pipe_command[1], STDOUT_FILENO) >= 0);
+			close (fds_pipe_command[1]);
+			close (fds_pipe_command[0]);
+
+			int size = 0;
+			char** args = tokenise (operand1, " \n\t", &size);
+
+			clean2Dstring (postfix, 0, MAXNUM_COMMAND);
+			while (st->size) stack_pop(st);
+
+			execvp (args[0], args);
+			// meaning command not found !!
+			perror ("ERROR ... command not found\n");
+			exit (-1);
+
+		}
+		else if (f1 > 0){
+			int st = 0;
+			waitpid (f1, &st, 0);
+			if (st){
+				// meaning operand1 is not a command
+
+				write (fds_pipe_command[1], operand1, strlen (operand1));
+
+			}
+
+		}
+
+		else if (f1<0){
+			perror ("ERROR ... fork failed in pipecommand\n");
 			exit (1);
 
 		}
-		else {
 
-			// parent process
+		f2 = fork ();
 
-			int st = 0;
-			wait (&st);
+		if (f2 == 0){
+
+			assert (dup2 (fds_pipe_command[0], STDIN_FILENO) >= 0);
+			close (fds_pipe_command[0]);
+			close (fds_pipe_command[1]);
+
+			int size = 0;
+			char** args = tokenise (operand2, " \n\t", &size);
+
+			clean2Dstring (postfix, 0, MAXNUM_COMMAND);
+			while (st->size) stack_pop(st);
+
+			execvp (args[0], args);
+
+			perror ("ERROR ... command not found\n");
+			exit (-1);
+		}
+		else if (f2 < 0){
+			perror ("ERROR ... fork failed in pipecommand\n");
+			exit (1);
 		}
 
-		close (output_file_fd);
-		dup2(stdout_cp, STDOUT_FILENO);
-		close (stdout_cp);
-		return 0;
+		// first close both the end as parent then weait for child else halt !
+		close (fds_pipe_command[0]);
+		close (fds_pipe_command[1]);
 
+
+		waitpid(f1, NULL, 0);
+		waitpid(f2, NULL, 0);
+
+
+		return 0;
 	}
 
-	int here_document_command (char* operand1, char* operand2){
-		printf ("this is here_document_command\n");
-		return 0;
-
-	}
-
-	int pipe_command (char* operand1, char* operand2){
-		printf ("this is pipe_command\n");
-		return 0;
-
-	}
-
-	int background_exe_command (char* operand1, char* operand2){
+	int background_exe_command (char* operand1, char* operand2, char** postfix, stack_t_* st){
 		printf ("this is background_exe_command\n");
 		return 0;
 
 	}
 
 
-	char* launch_command (char* operator, char* operand1, char* operand2){
+	char* launch_command (char* operator, char* operand1, char* operand2, char** postfix, stack_t_* st){
 
-		printf ("inside the launch command \n");
 		// we can use multiple pipes to a single fds[2]   no worries
 		pipe2(fds, O_NONBLOCK);
+		//pipe (fds);
 
 
 		// dup will open the file present in STDOUT_FILENO in a different fd
@@ -230,10 +313,10 @@ int output_command (char* operand1, char* operand2 , int flag){
 			close (stdout_cpy);
 			return NULL;
 		}
+		close (fds[1]);
 
-		char* output = malloc (MAXLEN_OUTPUT);
 		if (!strcmp (operator, "<")) {
-			if (input_redir_command(operand1, operand2)){
+			if (input_redir_command(operand1, operand2, postfix, st)){
 				perror ("ERROR in input redir\n");
 				close (fds[1]);
 				close (fds[0]);
@@ -244,28 +327,41 @@ int output_command (char* operand1, char* operand2 , int flag){
 		}
 		else if (!strcmp (operator, ">")){
 
-			output_command(operand1, operand2, TRUNC_OUTPUT);
+			if (output_command(operand1, operand2, TRUNC_OUTPUT, postfix, st)){
+				perror ("ERROR in ouput_redir_command\n");
+				close (fds [1]);
+				close (fds[0]);
+				dup2 (stdout_cpy, STDOUT_FILENO);
+				close (stdout_cpy);
+			}
 		}
 		else if (!strcmp (operator, ">>")) {
-
-			output_command(operand1, operand2, APPEND_OUTPUT);
+			if (output_command(operand1, operand2, APPEND_OUTPUT, postfix, st)){
+				perror ("ERROR in ouput_redir_command\n");
+				close (fds [1]);
+				close (fds[0]);
+				dup2 (stdout_cpy, STDOUT_FILENO);
+				close (stdout_cpy);
+			}
 		}
 		else if (!strcmp (operator, "<<")) {
 
-			here_document_command(operand1, operand2);
+			if (here_document_command(operand1, operand2, postfix, st)){
+				perror ("heredoc");
+			}
 		}
 		else if (!strcmp (operator, "|")) {
 
-			pipe_command(operand1, operand2);
+			pipe_command(operand1, operand2, postfix, st);
 		}
 		else if (!strcmp (operator, "&")) {
 
-			background_exe_command(operand1, operand2);
+			background_exe_command(operand1, operand2, postfix, st);
 		}
 
+	char* output = calloc (MAXLEN_OUTPUT, sizeof (char));
 	read (fds[0], output, MAXLEN_OUTPUT);
 
-	close (fds[0]);
 	close (fds[1]);
 
 	if (dup2 (stdout_cpy, STDOUT_FILENO) < 0){			// this will reopen the default stdout
@@ -275,10 +371,10 @@ int output_command (char* operand1, char* operand2 , int flag){
 
 	if (close (stdout_cpy) < 0){
 		perror ("ERROR in close (stdout_cpy) in launch command \n");
+		free (output);
 		return	NULL;
 	}
 
-		printf ("this is after restoring the stdout \n");
 	return output ;
 }
 
@@ -320,31 +416,33 @@ int execute (char** postfix){
 		if (isOper (*post_iter)){
 			char *operand1 = NULL, *operand2 =	NULL;
 
-			if (st.size)
-				operand2 = stack_top (&st);
-			if (operand2){
+			if (st.size){
+				operand2 = strdup (stack_top (&st));
 				stack_pop(&st);
-				if (st.size){
-					operand1 = stack_top(&st);
-					stack_pop(&st);
-				}
-				char* output = launch_command (*post_iter, operand1, operand2);
+			}
+			if (operand2 && st.size){
+				operand1 = strdup (stack_top(&st));
+				stack_pop(&st);
+
+				// pass postfix and stack to clean them in child processes
+				// we dont want the child to hold these blocks
+				char* output = launch_command (*post_iter, operand1, operand2, postfix, &st);
+				free (operand1);
+				free (operand2);
+
 				if (output)  stack_push(&st, output);
-				if (operand1) free(operand1);
-				if (operand2) free(operand2);
-				free(*post_iter);
 
 			}
 			else {
 				perror ("ERROR      operand2 is null\n");
-				if (operand1) free(operand1);
-				if (operand2) free(operand2);
-				free(*post_iter);
 				return 1;
 			}
 		}
 		else {
-			stack_push (&st, *post_iter);
+			stack_push (&st, strdup (*post_iter));			// push a copy of the string
+																// as we want to clean the postfix and
+																// stack separately inside the child process
+																// for simplicity
 		}
 		post_iter ++;
 
@@ -352,15 +450,19 @@ int execute (char** postfix){
 
 	if (st.size > 1){
 		perror ("ERROR.... bad command !\n");
+		while (st.size){
+			stack_pop(&st);
+		}
 		return -1;
 	}
 
 	if (st.size == 0) {
 		return 0;
 	}
-	printf ("%s\n", stack_top (&st));
+	printf ("%s is the stack top \n\n\n", stack_top (&st));
+	//free (stack_top (&st));
+	stack_pop(&st);
 
-	// handle single command ->
 	return 0;
 
 }

@@ -2,17 +2,17 @@
 
 char** parse (char* input, int size, int* tok_size){
 	// preblem (was) ->  malloc (MAXNUM_COMMAND) -> wrong
-	char** tokens = malloc (MAXNUM_COMMAND * sizeof (char*));
+	char** tokens = calloc (MAXNUM_COMMAND , sizeof (char*));
 
 	for (int i=0; i<MAXNUM_COMMAND; i++){
-		tokens[i] = malloc (MAXNUM_COMMAND);
+		tokens[i] = calloc (MAXLEN_COMMAND, sizeof (char));
 	}
 
 	int row = 0, col = 0;
 	for (int i=0; i<size-1; i++){
 		int val = getOperNum (input[i], input[i+1]);
 		if (col >= MAXLEN_COMMAND-1) {
-			printf ("too big command !! 1\n");
+			perror ("too big command !! 1");
 			clean2Dstring (tokens, 0, MAXNUM_COMMAND);
 			return NULL;
 		}
@@ -26,7 +26,7 @@ char** parse (char* input, int size, int* tok_size){
 			}
 			col = 0;
 			if (row >= MAXNUM_COMMAND-1) {
-				printf ("too big command !! 2 \n");
+				perror ("too big command !! 2 ");
 				clean2Dstring (tokens, 0, MAXNUM_COMMAND);
 				return NULL;
 			}

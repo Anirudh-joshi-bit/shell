@@ -1,5 +1,39 @@
 #include "header.h"
 
+char** sanitise (char** toks, int size){
+	// calloc -> init with NULL
+	char** parsed = calloc (MAXNUM_COMMAND, sizeof (char*));
+	char** parsed_it = parsed;
+	char** tok_it = toks;
+
+	while (strcmp (*tok_it, "")){
+
+		char* str_it = *tok_it;
+		bool trash = true;
+
+		while (*str_it){
+
+			if (*str_it != ' ' && *str_it != '\n') {
+				trash = false;
+				break;
+			}
+			str_it++;
+		}
+		if (!trash){
+			*parsed_it = strdup (*tok_it);
+			parsed_it ++;
+		}
+		tok_it ++;
+
+	}
+
+	*parsed_it = strdup ("");
+
+	clean2Dstring (toks, 0, size);
+	return parsed;
+}
+
+
 int main  (){
     printf("██████   ██   ██  ███████  ██       ██       \n");
     printf("██       ██   ██  ██       ██       ██       \n");
@@ -13,13 +47,10 @@ int main  (){
 		getcwd (pwd, MAXLEN_PWD);
 		printf ("__%s__ $ ", pwd);
 
+		char main_input[MAXLEN_INPUT], input[MAXLEN_INPUT];
 
-		char* main_input = malloc (MAXLEN_INPUT);
-		int main_size = MAXLEN_INPUT;
-		int main_iter = 0;
+		int main_size = MAXLEN_INPUT, main_iter = 0, size = MAXLEN_INPUT, error_found = 0;
 
-		char* input = malloc (MAXLEN_INPUT);
-		int size = MAXLEN_INPUT;
 
 
 		// tab completion implementation
@@ -27,14 +58,16 @@ int main  (){
 		//int st = tab_completion (main_input, main_size);
 
 		fgets (input, size, stdin);
-		int error_found = 0;
+		if (!strcmp (input, "exit\n"))
+			break;
+
 		size = strlen (input);
 
 		// handling <<
 
 		for (int i=0; i<size-1; i++){
 			if (main_iter >= main_size) {
-				perror ("too big input \n");
+				perror ("too big input");
 				error_found = 1;
 				break;
 
@@ -42,7 +75,7 @@ int main  (){
 			if (input[i] == '<' && input[i+1] == '<'){
 
 				if (main_iter >= main_size-1){
-					perror ("too big of a command \n");
+					perror ("too big of a command");
 					error_found = 1;
 					break;
 
@@ -50,15 +83,14 @@ int main  (){
 				main_input[main_iter++] = '<';
 				main_input[main_iter++] = '<';
 
-				char* delim = malloc (MAXLEN_DELIM);
+				char delim [MAXLEN_DELIM];
 				i+=2;
 
 				int del_iter = 0;
 
 				while (i<size && input[i] == ' ') i++;
 				if (i == size-1) {
-					perror ("no delimeter found !!\n");
-					free (delim);
+					perror ("no delimeter found !!");
 					error_found = 1;
 					break;
 				}
@@ -66,27 +98,26 @@ int main  (){
 
 					if (input[i] == ' ') {
 						error_found =  1;
-						perror ("error in delimeter in << \n");
+						perror ("error in delimeter in << ");
 						break;
 
 					}
 					if (del_iter >= 19){
 						error_found = 1;
-						perror ("error ! too big delimeter \n");
+						perror ("error ! too big delimeter ");
 						break;
 					}
 					delim [del_iter++] = input[i++];
 				}
 
 				if (error_found){
-					free (delim);
 					break;
 				}
 				delim[del_iter] = '\0';
 				printf ("delim = %s\n", delim);
 
 				// get line ->
-				char* temp = malloc (MAXLEN_COMMAND);
+				char temp[MAXLEN_COMMAND];
 				int size_temp = MAXLEN_COMMAND;
 				fgets(temp, size_temp, stdin);
 
@@ -99,18 +130,14 @@ int main  (){
 					fgets (temp, size_temp, stdin);
 
 					if (main_iter == -1) {
-						perror ("too big input !!! \n");
+						perror ("too big input !!!");
 						error_found = true;
 						break;
 					}
 				}
 				if (error_found){
-					free (temp);
-					free (delim);
 					break;
 				}
-				free (temp);
-				free(delim);
 			}
 			else {
 				main_input[main_iter++] = input[i];
@@ -130,16 +157,11 @@ int main  (){
 		// meaning skipping one place will include some garbage value !!
 
 
-		//if (main_iter)
-			//main_input [main_iter+1] = '\0';
-		//else main_input [main_iter] = '\0';
 		main_input[main_iter] = '\0';
 
 
 		if (error_found) {
-			printf ("error found inside the for loop !! \n");
-			free (main_input);
-			free (input);
+			perror ("error found inside the for loop !!");
 			continue;
 		}
 
@@ -151,42 +173,48 @@ int main  (){
 		 int tok_size = 0;
 		char** toks = parse(main_input, (int)main_size, &tok_size);
 		if (!toks) {
-			printf ("input didnot parsed !! \n");
-			free (main_input);
-			free (input);
+			perror ("input didnot parsed !!");
 			continue;
 		}
+		// probelm -> <space> <operator> <command>
+		// in the above case -> parser thinks <space> as a separate command
+		// this creates problem in execute fun (in the stack) as there are spaces in the place of actual command !
+		// sol ->
+		// remove the entries with no actual command (only spaces and one \n at the end)
 
-			//printf ("hii");
-		char** it = toks;
-		while (strcmp (*it, "")){
-			printf ("%s\n", *it);
-			it++;
+		char** parsed = sanitise (toks, MAXNUM_COMMAND);
+		char** t = parsed;
+		while (strcmp (*t, "")){
+			printf ("%s\n", *t);
+			t++;
+
 		}
-
+//
+//
+//
+//			//printf ("hii");
 		if (tok_size == 1){
-			// no operator !
-			if (exe_one_command (toks[0])){
-				perror ("ERROR in executing \n");
+//			// no operator !
+			if (exe_one_command (parsed[0])){
+				perror ("ERROR in executing ");
 			}
 			continue;
 		}
 
-	//	printf ("%d", (int)size);
-		// !!!!!!!!!!!! seg fault
-		// print the postfix !!
-		char** postfix = postfix_conversion (toks, (int)main_size);
+		char** postfix = postfix_conversion (parsed, (int)main_size);
 
-		char** post = postfix;
+		char ** post = postfix;
 		while (strcmp (*post, "")){
+
 			printf ("%s\n", *post);
 			post++;
-
 		}
+
+		clean2Dstring(parsed, 0, MAXNUM_COMMAND);
+//
 		execute (postfix);
 
-		printf ("command exe done \n");
-		free (main_input);
-		free (input);
+		clean2Dstring (postfix, 0,  MAXNUM_COMMAND);
 	}
+	return 0;
 }
