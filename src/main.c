@@ -174,9 +174,9 @@ printf("%s", art);
 
 
 
-		if (main_input[0] != '\0')
+		if (main_input[0] != '\0'){
 			push_crclArr(ca, main_input);
-
+		}
 
 
 
@@ -258,7 +258,7 @@ printf("%s", art);
 
 		clean2Dstring(parsed, 0, MAXNUM_COMMAND);
 //
-		execute (postfix);
+		execute (postfix, ca);
 
 		clean2Dstring (postfix, 0,  MAXNUM_COMMAND);
 	}

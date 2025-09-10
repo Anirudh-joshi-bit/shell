@@ -30,7 +30,7 @@
 #define MAXLEN_INPUT 2048
 #define MAXLEN_DELIM 30
 #define MAXLEN_OUTPUT 1048576
-#define MAXNUM_HISTORY 100
+#define MAXNUM_HISTORY 3
 
 
 // structs ->
@@ -90,7 +90,7 @@ void stack_init (stack_t_*);
 int stack_pop(stack_t_*);
 char* stack_top(stack_t_*);
 void stack_push(stack_t_*, char*);
-int execute (char**);
+int execute (char**, circularArr_t*);
 int getOperNum (char, char);
 bool isOper (char*);
 char** parse (char*, int, int*);

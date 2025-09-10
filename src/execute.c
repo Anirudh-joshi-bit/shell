@@ -68,6 +68,7 @@ int input_redir_command (char* operand1, char* operand2, char** postfix, stack_t
 
 		char** args = tokenise (operand1, " \n\t", &size);
 
+
 		clean2Dstring (postfix, 0, MAXNUM_COMMAND);
 		while (st->size) stack_pop(st);
 
@@ -91,7 +92,7 @@ int input_redir_command (char* operand1, char* operand2, char** postfix, stack_t
 	return 0;
 }
 
-int output_command (char* operand1, char* operand2 , int flag, char** postfix, stack_t_* st){
+int output_command (char* operand1, char* operand2 , int flag, char** postfix, stack_t_* st, circularArr_t* ca){
 
 	// operand2 will always have to be a file else it wil create one
 	// operand2 cannot be NULL nor an output of another command !
@@ -119,7 +120,6 @@ int output_command (char* operand1, char* operand2 , int flag, char** postfix, s
 		perror ("ERROR file not found");
 		return -1;
 	}
-		char** args = tokenise (operand1, " \n\t", &tok_size);
 
 	int f = fork ();
 	if (f < 0){
@@ -134,11 +134,21 @@ int output_command (char* operand1, char* operand2 , int flag, char** postfix, s
 		assert (dup2 (output_file_fd, STDOUT_FILENO));
 		close (output_file_fd);
 
+		char** args = tokenise (operand1, " \n\t", &tok_size);
+
 
 		clean2Dstring (postfix, 0, MAXNUM_COMMAND);
 		while (st->size) stack_pop(st);
 
 		execvp (args[0], args);
+
+		if (!builtin (args, ca)){
+			// right  !
+
+			exit (0);
+
+
+		}
 
 		perror ("ERROR command not found\n");
 		exit (1);
@@ -148,14 +158,7 @@ int output_command (char* operand1, char* operand2 , int flag, char** postfix, s
 
 			// parent process
 		int st = 0;
-		wait (&st);
-
-		if (st && !builtin(args, ca)){
-			clean2Dstring (args, 0, tok_size);
-			return 0;
-
-		}
-		clean2Dstring (args, 0, tok_size);
+		waitpid (f, &st, 0);
 
 	}
 	return 0;
@@ -239,10 +242,14 @@ int pipe_command (char* operand1, char* operand2, char** postfix, stack_t_* st){
 			int size = 0;
 			char** args = tokenise (operand1, " \n\t", &size);
 
+
 			clean2Dstring (postfix, 0, MAXNUM_COMMAND);
 			while (st->size) stack_pop(st);
 
 			execvp (args[0], args);
+
+
+
 			// meaning command not found !!
 			perror ("ERROR ... command not found\n");
 			exit (-1);
@@ -375,7 +382,7 @@ int pipe_command (char* operand1, char* operand2, char** postfix, stack_t_* st){
 
 
 
-	char* launch_command (char* operator, char* operand1, char* operand2, char** postfix, stack_t_* st){
+	char* launch_command (char* operator, char* operand1, char* operand2, char** postfix, stack_t_* st, circularArr_t* ca){
 
 		// we can use multiple pipes to a single fds[2]   no worries
 		pipe2(fds, O_NONBLOCK);
@@ -414,7 +421,7 @@ int pipe_command (char* operand1, char* operand2, char** postfix, stack_t_* st){
 		}
 		else if (!strcmp (operator, ">")){
 
-			if (output_command(operand1, operand2, TRUNC_OUTPUT, postfix, st)){
+			if (output_command(operand1, operand2, TRUNC_OUTPUT, postfix, st, ca)){
 				perror ("ERROR in ouput_redir_command\n");
 				close (fds [1]);
 				close (fds[0]);
@@ -423,7 +430,7 @@ int pipe_command (char* operand1, char* operand2, char** postfix, stack_t_* st){
 			}
 		}
 		else if (!strcmp (operator, ">>")) {
-			if (output_command(operand1, operand2, APPEND_OUTPUT, postfix, st)){
+			if (output_command(operand1, operand2, APPEND_OUTPUT, postfix, st, ca)){
 				perror ("ERROR in ouput_redir_command\n");
 				close (fds [1]);
 				close (fds[0]);
@@ -495,7 +502,7 @@ int pipe_command (char* operand1, char* operand2, char** postfix, stack_t_* st){
  *		separates commands
  */
 
-int execute (char** postfix){
+int execute (char** postfix, circularArr_t* ca){
 
 	stack_t_ st;
 	stack_init (&st);
@@ -516,7 +523,7 @@ int execute (char** postfix){
 
 				// pass postfix and stack to clean them in child processes
 				// we dont want the child to hold these blocks
-				char* output = launch_command (*post_iter, operand1, operand2, postfix, &st);
+				char* output = launch_command (*post_iter, operand1, operand2, postfix, &st, ca);
 				free (operand1);
 				free (operand2);
 
@@ -524,7 +531,7 @@ int execute (char** postfix){
 
 			}
 			else {
-				perror ("ERROR      operand2 is null\n");
+				perror ("ERROR operand2 is null or stack is empty for operand1\n");
 				return 1;
 			}
 		}

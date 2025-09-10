@@ -42,11 +42,16 @@ void push_crclArr (circularArr_t* ca, char* str){
 			perror ("msize == 0 !");
 			exit (1);
 		}
+		ca->s = (ca->s+1) % ca->maxsize;
+		ca->arr[ca -> s] = strdup (str);
+		ca->size ++;
 	}
-	ca->s = (ca->s+1) % ca->maxsize;
-	ca->arr[ca -> s] = strdup (str);
-	ca->size ++;
+	else {
 
+		ca->s = (ca->s +1) % ca->maxsize;
+		ca->size++;
+		ca->arr[ca->s] = strdup (str);
+	}
 }
 
 char* access_crclArr (circularArr_t* ca, int ind){
@@ -71,7 +76,7 @@ char* access_crclArr (circularArr_t* ca, int ind){
 int print_history (circularArr_t* ca, long ind){
 
 	if (ind == -1) {
-		for (int i=ca->size-1; i >= 0; i--) {
+		for (int i=ca->maxsize-1; i >= 0; i--) {
 
 			char* string = access_crclArr(ca, i);
 			if (string)
