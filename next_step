@@ -1,4 +1,4 @@
-background process
-heredoc
+history
+cd
 
-tabcompletion
+aliases file

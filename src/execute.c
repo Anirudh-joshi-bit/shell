@@ -30,6 +30,12 @@ int fds[2];
 // pipe the output os command into that file using "pipe()"
 
 int input_redir_command (char* operand1, char* operand2, char** postfix, stack_t_* st){
+
+	// here the operand2 must be a file, no other cases
+	// operand2 cannot be NULL or output of another command !
+
+
+
 	int size = 0;
 	if (operand1 == NULL || operand2 == NULL){
 		perror ("ERROR bad command and operations \n");
@@ -87,6 +93,8 @@ int input_redir_command (char* operand1, char* operand2, char** postfix, stack_t
 
 int output_command (char* operand1, char* operand2 , int flag, char** postfix, stack_t_* st){
 
+	// operand2 will always have to be a file else it wil create one
+	// operand2 cannot be NULL nor an output of another command !
 
 	int tok_size  = 0;
 	char** file_name = tokenise (operand2, " \n\t", &tok_size);
@@ -111,6 +119,7 @@ int output_command (char* operand1, char* operand2 , int flag, char** postfix, s
 		perror ("ERROR file not found");
 		return -1;
 	}
+		char** args = tokenise (operand1, " \n\t", &tok_size);
 
 	int f = fork ();
 	if (f < 0){
@@ -125,7 +134,6 @@ int output_command (char* operand1, char* operand2 , int flag, char** postfix, s
 		assert (dup2 (output_file_fd, STDOUT_FILENO));
 		close (output_file_fd);
 
-		char** args = tokenise (operand1, " \n\t", &tok_size);
 
 		clean2Dstring (postfix, 0, MAXNUM_COMMAND);
 		while (st->size) stack_pop(st);
@@ -141,6 +149,14 @@ int output_command (char* operand1, char* operand2 , int flag, char** postfix, s
 			// parent process
 		int st = 0;
 		wait (&st);
+
+		if (st && !builtin(args, ca)){
+			clean2Dstring (args, 0, tok_size);
+			return 0;
+
+		}
+		clean2Dstring (args, 0, tok_size);
+
 	}
 	return 0;
 }
@@ -161,6 +177,8 @@ int here_document_command (char* operand1, char* operand2, char** postfix, stack
 			lseek (fd, 0, SEEK_SET);
 
 			assert (dup2 (fd , STDIN_FILENO) == 0);
+
+			// we could just write operand2 into STDIN_FILENO instead of creating a tmp file
 
 
 			int size = 0;
@@ -284,11 +302,77 @@ int pipe_command (char* operand1, char* operand2, char** postfix, stack_t_* st){
 		return 0;
 	}
 
-	int background_exe_command (char* operand1, char* operand2, char** postfix, stack_t_* st){
-		printf ("this is background_exe_command\n");
+
+	int	command_separator(char* operand1, char* operand2, char** postfix, stack_t_* st){
+
+		//case 1 -> operand1 = NULL , operand2 = command | o/p of another command;
+		//case 2 -> operand1 = command, operand2 = command | o/p
+		//case 3 -> operand1 = o/p , operand2 = command
+		// there is no othe cases !
+
+		int f1=0, f2=0;
+		f1 = fork ();
+
+		if (f1 == 0){
+
+			int size = 0;
+			char** args = tokenise (operand1, " \n\t", &size);
+			execvp (args[0], args);
+
+			perror ("command not found");
+			exit (1);
+
+		}
+		else if (f1 > 0){
+			int st = 0;
+			waitpid (f1, &st, 0);
+			if (st){
+
+				write (STDOUT_FILENO, operand1, strlen(operand1));
+
+			}
+
+		}
+		else {
+			perror ("FORK in ; ");
+			exit (1);
+
+		}
+
+		f2 = fork ();
+
+		if (f2 == 0){
+			int size = 0;
+			char** args = tokenise (operand2, " \n\t", &size);
+			execvp (args[0], args);
+
+			exit (1);
+
+		}
+		else if (f2 > 0){
+
+			int st = 0;
+			waitpid (f2, &st, 0);
+			// if operand1 is null only in that case -> operand2 is alowed to not be a command
+			if (st){
+				write (STDOUT_FILENO, operand2, strlen (operand2));
+
+			}
+		}
+		else {
+			perror ("FORK in ;");
+			exit (1);
+		}
+
 		return 0;
 
 	}
+
+	int background_exe (char* operand1, char* operand2, char** postfix, stack_t_* st){
+
+		return 0;
+	}
+
 
 
 	char* launch_command (char* operator, char* operand1, char* operand2, char** postfix, stack_t_* st){
@@ -357,9 +441,9 @@ int pipe_command (char* operand1, char* operand2, char** postfix, stack_t_* st){
 
 			pipe_command(operand1, operand2, postfix, st);
 		}
-		else if (!strcmp (operator, "&")) {
+		else if (!strcmp (operator, ";")) {
 
-			background_exe_command(operand1, operand2, postfix, st);
+			command_separator (operand1, operand2, postfix, st);
 		}
 
 	char* output = calloc (MAXLEN_OUTPUT, sizeof (char));
@@ -406,6 +490,9 @@ int pipe_command (char* operand1, char* operand2, char** postfix, stack_t_* st){
  *		background exe
  *		exe in the background
  *
+ *	;
+ *		command separator
+ *		separates commands
  */
 
 int execute (char** postfix){

@@ -1,5 +1,9 @@
 #include "header.h"
 
+
+// global or static variables must init with compile time conatanst (numbers, addres to other global, NULL)
+circularArr_t* ca;
+
 char** sanitise (char** toks, int size){
 	// calloc -> init with NULL
 	char** parsed = calloc (MAXNUM_COMMAND, sizeof (char*));
@@ -36,6 +40,9 @@ char** sanitise (char** toks, int size){
 
 int main  (){
 
+circularArr_t* ca = malloc (sizeof (circularArr_t));
+ca_init (ca, MAXNUM_HISTORY);
+
 const char *art =
 "███████╗██╗  ██╗███████╗██╗     ██╗     \n"
 "██╔════╝██║  ██║██╔════╝██║     ██║     \n"
@@ -65,6 +72,7 @@ printf("%s", art);
 		fgets (input, size, stdin);
 		if (!strcmp (input, "exit\n"))
 			break;
+
 
 		size = strlen (input);
 
@@ -165,6 +173,14 @@ printf("%s", art);
 		main_input[main_iter] = '\0';
 
 
+
+		if (main_input[0] != '\0')
+			push_crclArr(ca, main_input);
+
+
+
+
+
 		if (error_found) {
 			perror ("error found inside the for loop !!");
 			continue;
@@ -200,9 +216,34 @@ printf("%s", art);
 //			//printf ("hii");
 		if (tok_size == 1){
 //			// no operator !
-			if (exe_one_command (parsed[0])){
-				perror ("ERROR in executing ");
+			int size_ = 0;
+			char** arg = tokenise(parsed[0], " \n\t", &size_);
+		//	char** arg_it = arg;
+//			while (*arg_it){
+//				printf ("%s\n", *arg_it);
+//				arg_it++;
+//
+//			}
+
+			int f = fork();
+			if (f== 0){
+
+				execvp (arg[0], arg);
+				exit (1);
+
 			}
+			else if (f > 0){
+				int st = 0;
+				waitpid (f, &st, 0);
+				if (st && builtin (arg, ca)){
+					perror ("single command exe ERROR ");
+				}
+			}
+			else
+				exit (1);
+
+			// clean shit
+
 			continue;
 		}
 

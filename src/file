@@ -1,0 +1,24 @@
+total 308
+drwxr-xr-x. 1 aniruddha_joshi aniruddha_joshi   460 Sep 10 10:29 .
+drwxr-xr-x. 1 aniruddha_joshi aniruddha_joshi    96 Sep 10 10:29 ..
+-rw-------. 1 aniruddha_joshi aniruddha_joshi 12288 Sep  8 22:24 .check_builtin.c.swp
+-rw-r--r--. 1 aniruddha_joshi aniruddha_joshi  1508 Sep 10 00:15 circularArr.c
+-rw-r--r--. 1 aniruddha_joshi aniruddha_joshi 12288 Sep 10 10:27 .circularArr.c.swp
+-rw-r--r--. 1 aniruddha_joshi aniruddha_joshi 11687 Sep  9 14:39 execute.c
+-rw-r--r--. 1 aniruddha_joshi aniruddha_joshi 77824 Sep 10 00:14 .execute.c.swo
+-rw-r--r--. 1 aniruddha_joshi aniruddha_joshi 73728 Sep  8 20:03 .execute.c.swp
+-rw-r--r--. 1 aniruddha_joshi aniruddha_joshi     0 Sep 10 10:29 file
+-rw-r--r--. 1 aniruddha_joshi aniruddha_joshi   197 Sep  7 17:09 goals
+-rw-r--r--. 1 aniruddha_joshi aniruddha_joshi   106 Aug 27 21:20 goals.txt
+-rw-r--r--. 1 aniruddha_joshi aniruddha_joshi  2220 Sep 10 00:14 header.h
+-rw-r--r--. 1 aniruddha_joshi aniruddha_joshi 12288 Sep  9 09:52 .header.h.swp
+-rw-r--r--. 1 aniruddha_joshi aniruddha_joshi  2515 Sep  9 09:38 helper_funcs.c
+-rw-r--r--. 1 aniruddha_joshi aniruddha_joshi  1089 Sep 10 10:28 history.c
+-rw-r--r--. 1 aniruddha_joshi aniruddha_joshi 12288 Sep 10 10:28 .history.c.swp
+-rw-r--r--. 1 aniruddha_joshi aniruddha_joshi  5799 Sep 10 00:00 main.c
+-rw-r--r--. 1 aniruddha_joshi aniruddha_joshi 28672 Sep  9 22:29 .main.c.swo
+-rw-r--r--. 1 aniruddha_joshi aniruddha_joshi 24576 Sep  8 22:25 .main.c.swp
+-rw-r--r--. 1 aniruddha_joshi aniruddha_joshi  1450 Sep  7 15:52 parse.c
+-rw-r--r--. 1 aniruddha_joshi aniruddha_joshi  2391 Sep  7 15:52 postfix.c
+-rw-r--r--. 1 aniruddha_joshi aniruddha_joshi  1755 Sep  9 09:39 stack.c
+-rw-r--r--. 1 aniruddha_joshi aniruddha_joshi   750 Sep  7 15:38 tabCompletion.c
