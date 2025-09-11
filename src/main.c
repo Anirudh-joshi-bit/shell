@@ -1,47 +1,241 @@
-#include "header.h"
+#include "../include/common.h"
+#include "../include/defines.h"
+#include "../include/circularArr.h"
+#include "../include/helper.h"
+#include "../include/builtin.h"
+#include "../include/utils.h"
+
+
+// removing all the clean2Dstring as i am getting segfault all the time when recursion
+// is used ($)
+//
+// solve this -> check where is the problem
+//
+// vim , and other program that run in the terminal cannot be paired with other commands
+// as programs like vim expect the output screen to be connected to the terminal
+// ans when implementing multiple command and operators, we need the output of a commd to be in a string
+// to achive this we redirect the output to a fd that is piped (basically the stdout is closed)
+
+
+
+
 
 
 // global or static variables must init with compile time conatanst (numbers, addres to other global, NULL)
-circularArr_t* ca;
 
-char** sanitise (char** toks, int size){
-	// calloc -> init with NULL
-	char** parsed = calloc (MAXNUM_COMMAND, sizeof (char*));
-	char** parsed_it = parsed;
-	char** tok_it = toks;
+char* handle_single_command (char** parsed, circularArr_t* ca, int* st, int flag);
 
-	while (strcmp (*tok_it, "")){
 
-		char* str_it = *tok_it;
-		bool trash = true;
+char* process_input(char* main_input, int main_size, circularArr_t* ca, int* status, int flag) {
 
-		while (*str_it){
+		if (main_size == 0){
+			perror ("empty input");
+			*status = -1;
+			return NULL;
+		}
+		 // for handling single command
+		 int tok_size = 0;
+		char** parsed = parse(main_input, (int)main_size, &tok_size);
+		if (!parsed) {
+			perror ("input didnot parsed !!");
+			*status = -1;
+			return NULL;
+		}
 
-			if (*str_it != ' ' && *str_it != '\n') {
-				trash = false;
-				break;
+		// probelm -> <space> <operator> <command>
+		// in the above case -> parser thinks <space> as a separate command
+		// this creates problem in execute fun (in the stack) as there are spaces in the place of actual command !
+		// sol ->
+		// remove the entries with no actual command (only spaces and one \n at the end)
+
+	//	char** parsed = sanitise (toks, tok_size);
+	//	char** t = parsed;
+//		while (strcmp (*t, "")){
+//			printf ("%s\n", *t);
+//			t++;
+//
+//		}
+//			//printf ("hii");
+
+		if (!parsed[0]){
+
+			perror ("invalid command");
+			*status = -1;
+			return	NULL;
+
+		}
+
+
+
+
+		if (tok_size == 1){
+			int st = 0;
+			char* output = handle_single_command (parsed, ca, &st, flag);
+	//		clean2Dstring (parsed, 0, MAXNUM_COMMAND);
+			free (parsed[0]) ;
+
+			if (!st){
+				if (NOT_MINI_SHELL == flag)
+					push_crclArr(ca, main_input);
+				*status = 0;
+				return output;
 			}
-			str_it++;
+			*status = -1;
+			if (output) free (output);
+			return NULL;
 		}
-		if (!trash){
-			*parsed_it = strdup (*tok_it);
-			parsed_it ++;
-		}
-		tok_it ++;
 
+		char** postfix = postfix_conversion (parsed);
+
+	//	char ** post = postfix;
+	//	while (*post){
+
+	//	printf ("%s\n", *post);
+	//		post++;
+	//	}
+
+		clean2Dstring(parsed, 0, MAXNUM_COMMAND);
+//
+
+
+
+		char* exe = execute (postfix, ca, status);
+		if (*status){
+			if (exe) free (exe);
+				return NULL;
+		}
+		else
+			if (flag == NOT_MINI_SHELL)
+				push_crclArr(ca, main_input);
+	//	exe = NULL;
+		clean2Dstring (postfix, 0,  MAXNUM_COMMAND);
+
+	return exe;
+}
+
+
+
+
+
+char* handle_single_command (char** parsed, circularArr_t* ca, int* status, int flag) {
+
+		int fd_single_command [2], stdout_cp = 0;
+	if (flag == MINI_SHELL){
+		pipe2 (fd_single_command, O_NONBLOCK);
+		stdout_cp = dup (STDOUT_FILENO);
+		assert (dup2(fd_single_command[1], STDOUT_FILENO) == 1);
 	}
 
-	*parsed_it = strdup ("");
+//			// no operator !
+			int size_ = 0;
+			char** arg = tokenise(strdup(parsed[0]), " \n", &size_);
+		//	char** arg_it = arg;
+//			while (*arg_it){
+//				printf ("%s\n", *arg_it);
+//				arg_it++;
+//
+//			}
+			if (size_ == 2 && !strcmp ("cd", arg[0])){
 
-	clean2Dstring (toks, 0, size);
-	return parsed;
+				if (chdir (arg[1])){
+					perror ("cd");
+
+					clean2Dstring (arg, 0, size_);
+	//				clean2Dstring (parsed, 0, MAXNUM_COMMAND);
+
+					if (flag == MINI_SHELL){
+						dup2(stdout_cp, STDOUT_FILENO);
+						close (stdout_cp) ;
+						close (fd_single_command[0]);
+						close (fd_single_command[1]);
+					}
+
+					*status = -1;
+					return NULL;
+				}
+				clean2Dstring (arg, 0, size_);
+	//			clean2Dstring (parsed, 0, MAXNUM_COMMAND);
+
+				if (flag == MINI_SHELL){
+					dup2 (stdout_cp, STDOUT_FILENO);
+
+					close (stdout_cp);
+					close(fd_single_command[0]);
+					close(fd_single_command[1]);
+				}
+
+				*status = 0;
+				return NULL;
+			}
+
+			int f = fork();
+			if (f== 0){
+
+				if (!builtin (arg, size_,  ca)){
+					exit (0);
+				}
+
+				execvp (arg[0], arg);
+				perror ("command not found");
+				exit (1);
+
+			}
+			else if (f > 0){
+				int st = 0;
+
+				waitpid (f, &st, 0);
+
+				if (st){
+					perror ("single command execution");
+					clean2Dstring (arg, 0, size_);
+	//				clean2Dstring (parsed, 0, MAXNUM_COMMAND);
+
+					if (flag == MINI_SHELL){
+						dup2 (stdout_cp, STDOUT_FILENO);
+
+						close (stdout_cp);
+						close(fd_single_command[0]);
+						close(fd_single_command[1]);
+					}
+					*status = -1;
+					return NULL;
+				}
+
+			}
+			else
+				exit (1);
+
+			// clean shit
+			clean2Dstring (arg, 0, size_);
+
+			if (flag == MINI_SHELL){
+
+				char* output = calloc (MAXLEN_OUTPUT , sizeof (char));
+				read (fd_single_command[0], output, MAXLEN_OUTPUT);
+				dup2 (stdout_cp, STDOUT_FILENO);
+
+				close (stdout_cp);
+				close(fd_single_command[0]);
+				close(fd_single_command[1]);
+
+
+				*status = 0;
+				return output;
+
+			}
+
+			*status = 0;
+			return NULL;
 }
+
+
+circularArr_t* ca;
 
 
 int main  (){
 
 
-circularArr_t* ca = malloc (sizeof (circularArr_t));
+circularArr_t* ca = calloc (1, sizeof (circularArr_t));
 ca_init (ca, MAXNUM_HISTORY);
 
 const char *art =
@@ -60,7 +254,8 @@ printf("%s", art);
 		getcwd (pwd, MAXLEN_PWD);
 		printf ("__%s__ $ ", pwd);
 
-		char main_input[MAXLEN_INPUT], input[MAXLEN_INPUT];
+		char* main_input = calloc (MAXLEN_INPUT, sizeof (char));
+		char input[MAXLEN_INPUT];
 
 		int main_size = MAXLEN_INPUT, main_iter = 0, size = MAXLEN_INPUT, error_found = 0;
 
@@ -175,12 +370,6 @@ printf("%s", art);
 
 
 
-		if (main_input[0] != '\0'){
-			push_crclArr(ca, main_input);
-		}
-
-
-
 
 		if (error_found) {
 			perror ("error found inside the for loop !!");
@@ -189,96 +378,17 @@ printf("%s", art);
 
 		// handling << -> done
 
+
 		 main_size = strlen (main_input);
 
-		 // for handling single command
-		 int tok_size = 0;
-		char** toks = parse(main_input, (int)main_size, &tok_size);
-		if (!toks) {
-			perror ("input didnot parsed !!");
-			continue;
-		}
-		// probelm -> <space> <operator> <command>
-		// in the above case -> parser thinks <space> as a separate command
-		// this creates problem in execute fun (in the stack) as there are spaces in the place of actual command !
-		// sol ->
-		// remove the entries with no actual command (only spaces and one \n at the end)
+		 int st = 0;
+		 char* output = process_input(main_input, main_size, ca, &st, NOT_MINI_SHELL);
+		 if (!st && output){
+			printf ("%s", output);
+		 }
+		 if (output) free (output);
 
-		char** parsed = sanitise (toks, MAXNUM_COMMAND);
-//		char** t = parsed;
-//		while (strcmp (*t, "")){
-//			printf ("%s\n", *t);
-//			t++;
-//
-//		}
-//
-//
-//
-//			//printf ("hii");
-		if (tok_size == 1){
-//			// no operator !
-			int size_ = 0;
-			char** arg = tokenise(parsed[0], " \n\t", &size_);
-		//	char** arg_it = arg;
-//			while (*arg_it){
-//				printf ("%s\n", *arg_it);
-//				arg_it++;
-//
-//			}
-			if (size_ == 2 && !strcmp ("cd", arg[0])){
 
-				if (chdir (arg[1])){
-					perror ("cd");
-				}
-				clean2Dstring (arg, 0, size_);
-				clean2Dstring (parsed, 0, MAXNUM_COMMAND);
-				continue;
-			}
-
-			int f = fork();
-			if (f== 0){
-
-				if (!builtin (arg, size_,  ca)){
-					exit (0);
-				}
-
-				execvp (arg[0], arg);
-				perror ("command not found");
-				exit (1);
-
-			}
-			else if (f > 0){
-				int st = 0;
-
-				waitpid (f, &st, 0);
-
-				if (st)
-					perror ("single command execution");
-
-			}
-			else
-				exit (1);
-
-			// clean shit
-			clean2Dstring (arg, 0, size_);
-			clean2Dstring (parsed, 0, MAXNUM_COMMAND);
-			continue;
-		}
-
-		char** postfix = postfix_conversion (parsed, (int)main_size);
-
-//		char ** post = postfix;
-//		while (strcmp (*post, "")){
-//
-//			printf ("%s\n", *post);
-//			post++;
-//		}
-
-		clean2Dstring(parsed, 0, MAXNUM_COMMAND);
-//
-		execute (postfix, ca);
-
-		clean2Dstring (postfix, 0,  MAXNUM_COMMAND);
 	}
 	return 0;
 }

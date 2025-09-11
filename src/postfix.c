@@ -1,6 +1,10 @@
-#include "header.h"
+#include "../include/common.h"
+#include "../include/defines.h"
+#include "../include/stack.h"
+#include "../include/helper.h"
 
-char** postfix_conversion (char** toks, int input_size){
+
+char** postfix_conversion (char** toks){
 	stack_t_ st;
 	stack_init (&st);
 	char** tok_iter = toks;
@@ -25,7 +29,7 @@ char** postfix_conversion (char** toks, int input_size){
 
 	// first check if the given input as a valid paranthesis or not
 
-	while (strcmp ("", *tok_iter)) {
+	while (*tok_iter) {
 		if (isOper (*tok_iter)){
 
 			if (!strcmp (*tok_iter, ")")){
@@ -74,8 +78,6 @@ char** postfix_conversion (char** toks, int input_size){
 		tok_iter_res ++;
 		stack_pop(&st);
 	}
-	*tok_iter_res = strdup ("");				// empty string to terminate the postfix
-
 
 	return toks_postfix;
 }

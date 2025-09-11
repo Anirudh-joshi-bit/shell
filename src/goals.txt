@@ -1,9 +1,0 @@
-alias support
-
-Command substitution
-
-Syntax highlighting in the shell prompt
-
-tab completion
-
-job control

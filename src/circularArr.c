@@ -1,5 +1,5 @@
-#include "header.h"
-
+#include "../include/common.h"
+#include "../include/circularArr.h"
 
 void ca_init (circularArr_t* ca, int size){
 
@@ -26,6 +26,8 @@ int pop_crclArr (circularArr_t* ca){
 }
 
 void push_crclArr (circularArr_t* ca, char* str){
+
+	if (!str) return;
 
 	if (ca->size == 0){
 		// reset the ends
@@ -76,23 +78,22 @@ char* access_crclArr (circularArr_t* ca, int ind){
 int print_history (circularArr_t* ca, long ind){
 
 	if (ind == -1) {
-		for (int i=ca->maxsize-1; i >= 0; i--) {
 
-			char* string = access_crclArr(ca, i);
-			if (string)
-				printf ("%d - %s\n", i, string);
-			else
-				return -1;
+		int it = ca->e;
+		int index = ca->size;
+		while (it != ca->s) {
+			printf ("%d - %s\n", index, ca->arr[it]);
+			it = (it +1) % ca->maxsize;
+			index--;
 		}
+		printf ("%d - %s\n", index, ca->arr[it]);
 	}
 	else{
-		ind ++;    // when histroy x is called , the command first get pushed into the history meaning if user sees an entry with num 3 by the time user calls 3, ind of 3 would have changed to 4;
 		char* string = access_crclArr(ca, ind);
 		if (string)
 			printf ("%s\n", string);
 		else
 			return -1;
-
 	}
 	return 0;
 

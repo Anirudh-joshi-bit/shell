@@ -1,4 +1,2 @@
-history
-cd
-
-aliases file
+vgrind > clean
+add "" support (inside tokeniser command)

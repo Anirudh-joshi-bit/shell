@@ -1,6 +1,0 @@
- . Fuzzy command suggestions
- . History navigation
- . Piping & redirection
- . Background process support (&)
- . Alias management (.lashrc)
- . A clean, structured UI - no ncurses, just ANSI control

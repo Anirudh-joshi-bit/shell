@@ -1,5 +1,6 @@
-#include "header.h"
-
+#include "../include/common.h"
+#include "../include/defines.h"
+#include "../include/circularArr.h"
 
 // for history ->
 // op1 doublly linked list -> delete, insert -> O(1)

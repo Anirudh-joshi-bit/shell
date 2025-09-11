@@ -1,5 +1,6 @@
-#include "header.h"
-
+#include "../include/common.h"
+#include "../include/defines.h"
+#include "../include/stack.h"
 
 int string_append (char* dest, char* target, int dest_end, int dest_size){
 
@@ -28,20 +29,21 @@ void clean2Dstring (char** tok, int st, int size){
 		free(tok);
 }
 
-int getOperNum (char a, char b){
-	if ((a == '<' && b == '<') || (a == '>' && b == '>')) return 2;
-	return a=='|' ||  a== '<' ||  a=='>' ||  a=='(' ||  a==')' ||  a=='&' ||  a==';';
+int getOperNum (char a){
+	//if ((a == '<' && b == '<') || (a == '>' && b == '>')) return 2;
+	return a=='|' ||  a== '<' ||  a=='>' ||  a=='(' ||  a==')' ||  a=='&' ||  a==';' || a=='$';
 }
 
 
 bool isOper (char* op){
-	return !strcmp(op, "(") || !strcmp(op, ")") || !strcmp(op, "<") || !strcmp(op, "<<") || !strcmp(op, ">") || !strcmp(op, ">>") || !strcmp(op, "|") || !strcmp(op, "&") || !strcmp(op, ";");
+	return !strcmp(op, "(") || !strcmp(op, ")") || !strcmp(op, "<") || !strcmp(op, "<<") || !strcmp(op, ">") || !strcmp(op, ">>") || !strcmp(op, "|") || !strcmp(op, "&") || !strcmp(op, ";") || !strcmp (op, "$");
 }
 
 int getPrecedence (char* oper){
 	if (!strcmp(oper, "(") || !strcmp(oper, ")")) return -1;
-	if (!strcmp(oper, "<") || !strcmp(oper, "<<") || !strcmp(oper, ">") || !strcmp(oper, ">>")) return 3;
-	if (!strcmp(oper, "|")) return 2;
+	if (!strcmp (oper, "$")) return 4;
+	if (!strcmp(oper, "|")) return 3;
+	if (!strcmp(oper, "<") || !strcmp(oper, "<<") || !strcmp(oper, ">") || !strcmp(oper, ">>")) return 2;
 	if (!strcmp(oper, "&")) return 1;
 	if (!strcmp(oper, ";")) return 0;
 
@@ -67,7 +69,7 @@ char** tokenise (char* string, char* delim, int* size){
 		tok = strtok (NULL, delim);
 
 	}
-
+	free (string);
 	*size = tok_iter;
 	toks[tok_iter] = NULL;
 
@@ -93,29 +95,29 @@ void print_stack (stack_t_* st){
 	}
 
 }
-int exe_one_command (char* command){
-
-	int size = 0, st = 0;
-
-	int f = fork ();
-	if (f == 0){
-		char** args = tokenise (command, " \n\t", &size);
-		execvp (args[0], args);
-		perror ("command not found \n");
-		// why clean if exiting -> so that valgind donot track this !!
-		clean2Dstring (args, 0, size);
-		exit(1);
-	}
-	else if (f > 0){
-		wait (&st);
-		if (st){
-			perror ("ERROR in launching command \n");
-			return -1;
-		}
-	}
-	else {
-		perror ("ERROR in fork in exe_one_command \n");
-		exit (-1);
-	}
-	return 0;
-}
+//int exe_one_command (char* command){
+//
+//	int size = 0, st = 0;
+//
+//	int f = fork ();
+//	if (f == 0){
+//		char** args = tokenise (command, " \n\t", &size);
+//		execvp (args[0], args);
+//		perror ("command not found \n");
+//		// why clean if exiting -> so that valgind donot track this !!
+//		clean2Dstring (args, 0, size);
+//		exit(1);
+//	}
+//	else if (f > 0){
+//		wait (&st);
+//		if (st){
+//			perror ("ERROR in launching command \n");
+//			return -1;
+//		}
+//	}
+//	else {
+//		perror ("ERROR in fork in exe_one_command \n");
+//		exit (-1);
+//	}
+//	return 0;
+//}

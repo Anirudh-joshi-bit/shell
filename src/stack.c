@@ -1,4 +1,6 @@
-#include "header.h"
+#include "../include/common.h"
+#include "../include/defines.h"
+#include "../include/stack.h"
 
 
 void node_init (node_t* node, char* command){
@@ -17,14 +19,14 @@ void list_init (list_t* l){
 int insert_head (list_t* l, char* command){
 
 	if (l->head == NULL){
-		l->head = malloc (sizeof (node_t));
+		l->head = calloc (1,sizeof (node_t));
 		node_init (l->head, command);
 		l->size++;
 		l->tail = l->head;
 		return 0;
 	}
 
-	node_t* node = malloc (sizeof (node_t));
+	node_t* node = calloc (1, sizeof (node_t));
 	assert (node);
 	node_init (node, command);
 
@@ -40,14 +42,14 @@ int insert_head (list_t* l, char* command){
 int insert_tail (list_t* l, char* command){
 
 	if (l->tail == NULL){
-		l->tail = malloc (sizeof (node_t));
+		l->tail = calloc (1,sizeof (node_t));
 		node_init (l->tail, command);
 		l->head = l->tail;
 		l->size = 0;
 		return 0;
 	}
 
-	node_t* node = malloc (sizeof (node_t));
+	node_t* node = calloc (1,sizeof (node_t));
 	node_init (node, command);
 	l->tail->next = node;
 	node->prev = l->tail;
@@ -92,7 +94,7 @@ int delete_head (list_t* l){
 
 void stack_init (stack_t_* st){
 
-	st->l = malloc (sizeof (list_t));
+	st->l = calloc (1,sizeof (list_t));
 	list_init(st->l);
 	st->size = 0;
 }
