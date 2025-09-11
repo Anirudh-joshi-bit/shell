@@ -142,7 +142,7 @@ int output_command (char* operand1, char* operand2 , int flag, char** postfix, s
 
 		execvp (args[0], args);
 
-		if (!builtin (args, ca)){
+		if (!builtin (args, tok_size,  ca)){
 			// right  !
 
 			exit (0);
@@ -317,41 +317,77 @@ int pipe_command (char* operand1, char* operand2, char** postfix, stack_t_* st){
 		//case 3 -> operand1 = o/p , operand2 = command
 		// there is no othe cases !
 
+
+
+
+
 		int f1=0, f2=0;
-		f1 = fork ();
+		if (operand1) {
+			// as operand1 can be null and if it is null, we dont want to exec for operand1
 
-		if (f1 == 0){
+			int size_1 = 0;
+			char** args_1 = tokenise (operand1, " \n\t", &size_1);
 
-			int size = 0;
-			char** args = tokenise (operand1, " \n\t", &size);
-			execvp (args[0], args);
-
-			perror ("command not found");
-			exit (1);
-
-		}
-		else if (f1 > 0){
-			int st = 0;
-			waitpid (f1, &st, 0);
-			if (st){
-
-				write (STDOUT_FILENO, operand1, strlen(operand1));
-
+			if (size_1 == 2 && !strcmp ("cd", args_1[0])){
+				if (chdir (args_1[1])){
+					perror ("cd in ; ");
+					// cannot return even is error occures -> operand2 is there waiting to be processed
+					// cannot clean args_1 here as it is used below
+				}
+				// cannot return 0 from here as operand2 is there wating to be processed
+				// cannot clean args_1 as it is used below
 			}
 
+			f1 = fork ();
+
+			if (f1 == 0){
+
+				execvp (args_1[0], args_1);
+
+				perror ("command not found");
+				exit (1);
+
+			}
+			else if (f1 > 0){
+				int st = 0;
+				waitpid (f1, &st, 0);
+				if (st){
+					// operand1 is a output of another command
+					write (STDOUT_FILENO, operand1, strlen(operand1));
+
+				}
+
+			}
+			else {
+				perror ("FORK in ; ");
+				exit (1);
+
+			}
+			// clean args_1 once operand1 is processed
+
+			clean2Dstring (args_1, 0, size_1);
 		}
-		else {
-			perror ("FORK in ; ");
-			exit (1);
+
+
+		int size_2 = 0;
+		char** args_2 = tokenise (operand2, " \n\t", &size_2);
+
+		if (size_2 == 2 && !strcmp(args_2[0], "cd")){
+			if (chdir (args_2[1])){
+				perror ("cd in ;");
+				clean2Dstring (args_2, 0, size_2);
+				return -1;
+			}
+			// now we can return from the function, as operand1 is already processed
+			clean2Dstring (args_2, 0, size_2);
+			return 0;
 
 		}
 
 		f2 = fork ();
 
 		if (f2 == 0){
-			int size = 0;
-			char** args = tokenise (operand2, " \n\t", &size);
-			execvp (args[0], args);
+			execvp (args_2[0], args_2);
 
 			exit (1);
 
@@ -365,6 +401,9 @@ int pipe_command (char* operand1, char* operand2, char** postfix, stack_t_* st){
 				write (STDOUT_FILENO, operand2, strlen (operand2));
 
 			}
+			// clean args_2 after operand2 is processsed
+
+			clean2Dstring (args_2, 0, size_2);
 		}
 		else {
 			perror ("FORK in ;");
@@ -517,9 +556,11 @@ int execute (char** postfix, circularArr_t* ca){
 				operand2 = strdup (stack_top (&st));
 				stack_pop(&st);
 			}
-			if (operand2 && st.size){
-				operand1 = strdup (stack_top(&st));
-				stack_pop(&st);
+			if (operand2 ){
+				if (st.size){
+					operand1 = strdup (stack_top(&st));
+					stack_pop(&st);
+				}
 
 				// pass postfix and stack to clean them in child processes
 				// we dont want the child to hold these blocks
@@ -531,7 +572,7 @@ int execute (char** postfix, circularArr_t* ca){
 
 			}
 			else {
-				perror ("ERROR operand2 is null or stack is empty for operand1\n");
+				perror ("ERROR operand2 is null\n");
 				return 1;
 			}
 		}

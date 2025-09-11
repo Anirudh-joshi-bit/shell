@@ -107,6 +107,6 @@ void list_init (list_t* l);
 int insert_head (list_t* l, char* command);
 int delete_head (list_t* l);
 int print_history (circularArr_t* ca, long ind);
-int builtin (char** args, circularArr_t* ca);
+int builtin (char** args, int size, circularArr_t* ca);
 void ca_init (circularArr_t* ca, int ind);
  void push_crclArr (circularArr_t* ca, char* str);

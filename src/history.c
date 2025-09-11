@@ -45,24 +45,18 @@ int history_command (char** args, circularArr_t* ca){
 
 }
 
-int builtin (char** args, circularArr_t* ca){
+int builtin (char** args, int size, circularArr_t* ca){
 	if (!args[0]) return -1;
 
-	int size = 0;
 
 	if (!strcmp (args[0], "history")){
-		if (size > 2) return -1;
+		//if (size > 2) return -1;
 
 		return history_command (args, ca) ;
 
 	}
-	else if (!strcmp (args[0], "cd")){
 
-
-
-	}
-
-	clean2Dstring (args, 0, size);
+	//clean2Dstring (args, 0, size);
 
 	return -1;
 

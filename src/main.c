@@ -40,6 +40,7 @@ char** sanitise (char** toks, int size){
 
 int main  (){
 
+
 circularArr_t* ca = malloc (sizeof (circularArr_t));
 ca_init (ca, MAXNUM_HISTORY);
 
@@ -224,26 +225,43 @@ printf("%s", art);
 //				arg_it++;
 //
 //			}
+			if (size_ == 2 && !strcmp ("cd", arg[0])){
+
+				if (chdir (arg[1])){
+					perror ("cd");
+				}
+				clean2Dstring (arg, 0, size_);
+				clean2Dstring (parsed, 0, MAXNUM_COMMAND);
+				continue;
+			}
 
 			int f = fork();
 			if (f== 0){
 
+				if (!builtin (arg, size_,  ca)){
+					exit (0);
+				}
+
 				execvp (arg[0], arg);
+				perror ("command not found");
 				exit (1);
 
 			}
 			else if (f > 0){
 				int st = 0;
+
 				waitpid (f, &st, 0);
-				if (st && builtin (arg, ca)){
-					perror ("single command exe ERROR ");
-				}
+
+				if (st)
+					perror ("single command execution");
+
 			}
 			else
 				exit (1);
 
 			// clean shit
-
+			clean2Dstring (arg, 0, size_);
+			clean2Dstring (parsed, 0, MAXNUM_COMMAND);
 			continue;
 		}
 
