@@ -6,12 +6,15 @@
 #define GREEN "\x1b[32;40m"
 
 
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+
 #define MINI_SHELL 1
 #define NOT_MINI_SHELL 0
 #define APPEND_OUTPUT 1
 #define TRUNC_OUTPUT 0
 #define MAXLEN_PWD 200
-#define MAXLEN_COMMAND 100
+#define MAXLEN_COMMAND 1000
 #define MAXNUM_COMMAND 100
 #define MAXLEN_INPUT 2048
 #define MAXLEN_DELIM 30

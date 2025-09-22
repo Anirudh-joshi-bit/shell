@@ -14,9 +14,6 @@ OUTPUT = $(BUILD_FOLDER)/SHELL
 
 all : $(OUTPUT)
 
-#$(OUTPUT) : $(SRC_FILES)
-#	$(CXX) -g $(SRC_FILES) -o $(OUTPUT)
-
 $(OUTPUT): $(BUILD_FILES)
 	$(CXX) $(FLAGS)  $(BUILD_FILES) -o $(OUTPUT)
 

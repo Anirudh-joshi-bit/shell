@@ -21,7 +21,7 @@ int string_append (char* dest, char* target, int dest_end, int dest_size){
 void clean2Dstring (char** tok, int st, int size){
 
 	if (!tok) return;
-	for (int i=st; i<size; i++){
+	for (int i=st; i<=size; i++){
 		if (tok[i])
 			free (tok[i]);
 	}
@@ -31,19 +31,21 @@ void clean2Dstring (char** tok, int st, int size){
 
 int getOperNum (char a){
 	//if ((a == '<' && b == '<') || (a == '>' && b == '>')) return 2;
-	return a=='|' ||  a== '<' ||  a=='>' ||  a=='(' ||  a==')' ||  a=='&' ||  a==';' || a=='$';
+	return a=='|' ||  a== '<' ||  a=='>' ||  a=='(' ||  a==')' ||  a==';' || a=='$';
 }
 
 
 bool isOper (char* op){
-	return !strcmp(op, "(") || !strcmp(op, ")") || !strcmp(op, "<") || !strcmp(op, "<<") || !strcmp(op, ">") || !strcmp(op, ">>") || !strcmp(op, "|") || !strcmp(op, "&") || !strcmp(op, ";") || !strcmp (op, "$");
+	return !strcmp(op, "(") || !strcmp(op, ")") || !strcmp(op, "<") || !strcmp(op, "<<") || !strcmp(op, ">") || !strcmp(op, ">>") || !strcmp(op, "|") || !strcmp(op, ";") || !strcmp (op, "$");
 }
 
 int getPrecedence (char* oper){
+	//always ; has the least precedence  => need of postfix conversion and precedence !!!
+
 	if (!strcmp(oper, "(") || !strcmp(oper, ")")) return -1;
-	if (!strcmp (oper, "$")) return 4;
-	if (!strcmp(oper, "|")) return 3;
-	if (!strcmp(oper, "<") || !strcmp(oper, "<<") || !strcmp(oper, ">") || !strcmp(oper, ">>")) return 2;
+	if (!strcmp (oper, "$")) return 1;
+	if (!strcmp(oper, "<") || !strcmp(oper, "<<") || !strcmp(oper, ">") || !strcmp(oper, ">>")) return 1;
+	if (!strcmp(oper, "|")) return 1;
 	if (!strcmp(oper, "&")) return 1;
 	if (!strcmp(oper, ";")) return 0;
 
@@ -52,20 +54,28 @@ int getPrecedence (char* oper){
 
 char** tokenise (char* string, char* delim, int* size){
 
-	char** toks = calloc (MAXLEN_COMMAND , sizeof (char*));
+	if (!string){
+		*size = 0;
+		return NULL;
+	}
+
+
+	char** toks = calloc (MAXNUM_COMMAND , sizeof (char*));
 	int tok_iter = 0;
 	char* tok = strtok (string, delim);
 
 	while (tok){
 
 		toks[tok_iter++] = strdup (tok);
-		if (tok_iter >= MAXLEN_COMMAND){
+		if (tok_iter >= MAXNUM_COMMAND){
 
-			perror ("too big command ERROR \n");
-			clean2Dstring (toks, 0, MAXLEN_COMMAND);
+			clean2Dstring (toks, 0, MAXNUM_COMMAND);
+			//free (tok);
 			return NULL;
 
 		}
+		//free (tok);
+
 		tok = strtok (NULL, delim);
 
 	}

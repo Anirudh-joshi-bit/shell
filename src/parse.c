@@ -7,8 +7,10 @@ char* mini_shell (char* main_input, int size, circularArr_t* ca, int* status, in
 
 	// start a recursive solutione
 	char* output = process_input (main_input, size, ca, status, flag);
-	if (*status)
+	if (*status){
+		free (output);
 		return NULL;
+	}
 	return output;
 
 }
@@ -24,7 +26,6 @@ char** parse (char* input, int size, int* tok_size){
 
 	char** ans = calloc (MAXNUM_COMMAND, sizeof (char*));
 	char** ans_it = ans;
-	int ans_size = 0;
 
 	for (int i=0; i<size; i++){
 
@@ -55,33 +56,34 @@ char** parse (char* input, int size, int* tok_size){
 
 		*temp_it = '\0';
 
-		if (*ans_it)
+		if (*ans_it){
+			*ans_it = realloc (*ans_it, strlen(*ans_it) + strlen(temp));
 			strcat (*ans_it, temp);
-		else
-			*ans_it = strdup(temp);
+			free (temp);
+		}
+		else{
+			*ans_it = temp;
+		}
 
-		ans_size++;
-		if (ans_size >= MAXNUM_COMMAND){
+		if (ans_it - ans >= MAXNUM_COMMAND){
 			clean2Dstring (ans, 0, MAXNUM_COMMAND);
 			perror ("too big command");
 			return NULL;
 		}
-		ans_it ++;
-		free (temp);
-		if (i>= size) {
-			*tok_size = ans_size;
+	//	ans_it ++;
+		if (i >= size) {
+			*tok_size = MAX(ans_it - ans, 1);
 			return ans;
 
 		}
 		if (i<size-1 && input[i] == '<' && input[i+1] == '<'){
-
+			ans_it ++;
 			if (*ans_it)
 				strcat (*ans_it, "<<");
 			else
 				*ans_it = strdup ("<<");
 
-			ans_size++;
-		if (ans_size >= MAXNUM_COMMAND){
+		if (ans_it - ans >= MAXNUM_COMMAND){
 			clean2Dstring (ans, 0, MAXNUM_COMMAND);
 			perror ("too big command");
 			return NULL;
@@ -90,13 +92,14 @@ char** parse (char* input, int size, int* tok_size){
 
 		}
 		else if (i<size-1 && input[i] == '>' && input[i+1] == '>'){
+			ans_it ++;
+
 			if (*ans_it)
 			strcat (*ans_it, ">>");
 			else
 				*ans_it = strdup (">>");
 
-			ans_size++;
-		if (ans_size >= MAXNUM_COMMAND){
+		if (ans_it - ans >= MAXNUM_COMMAND){
 			clean2Dstring (ans, 0, MAXNUM_COMMAND);
 			perror ("too big command");
 			return NULL;
@@ -152,15 +155,17 @@ char** parse (char* input, int size, int* tok_size){
 
 			*temp_it = '\0';
 			if (open_braces){
-				clean2Dstring (ans, 0, ans_size);
+				clean2Dstring (ans, 0, ans_it - ans);
+				free (temp_);
 				return NULL;
 
 			}
-			if (ans_it == ans) {
-				return NULL;
-			}
 			int status = 0;
 			char* mini_out = mini_shell (temp_, strlen(temp_), ca, &status ,MINI_SHELL);
+
+			if (temp_) free (temp_);
+
+
 			if (status){
 				free (mini_out);
 				return NULL;
@@ -174,28 +179,28 @@ char** parse (char* input, int size, int* tok_size){
 
 
 
-				char* realloc_temp =  realloc (*(ans_it-1), MAXLEN_COMMAND);
+				char* realloc_temp =  realloc (*(ans_it), MAXLEN_COMMAND);
 				if (realloc_temp)
-					*(ans_it-1) = realloc_temp;
+					*(ans_it) = realloc_temp;
 
 				else{
-					clean2Dstring (ans, 0, ans_size);
+					clean2Dstring (ans, 0, ans_it - ans);
 					return NULL;
 				}
 
-				if (strlen (*(ans_it-1)) + strlen(mini_out) >= MAXLEN_COMMAND){
+				if (strlen (*(ans_it)) + strlen(mini_out) >= MAXLEN_COMMAND){
 					perror ("too big output of mini_shell");
 					free (mini_out);
 
 					return NULL;
 				}
 
-				strcat (*(--ans_it), mini_out);
-	//			ans_size --;
+				strcat (*(ans_it), mini_out);
 				free (mini_out);
 			}
 		}
 		else {
+			ans_it ++;
 			char oper [2];
 			oper[0] = input[i];
 			oper[1] = '\0';
@@ -205,8 +210,7 @@ char** parse (char* input, int size, int* tok_size){
 			else
 				*ans_it = strdup (oper);
 
-			ans_size++;
-		if (ans_size >= MAXNUM_COMMAND){
+		if (ans_it - ans >= MAXNUM_COMMAND){
 			clean2Dstring (ans, 0, MAXNUM_COMMAND);
 			perror ("too big command");
 			return NULL;
@@ -215,6 +219,10 @@ char** parse (char* input, int size, int* tok_size){
 		}
 
 	}
-	*tok_size = ans_size;
+
+	// if there is only $ operator in the input, size will be 0
+
+
+	*tok_size = MAX (ans_it - ans , 1);
 	return ans;
 }

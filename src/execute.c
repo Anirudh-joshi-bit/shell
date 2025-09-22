@@ -192,7 +192,7 @@ char* execute (char** postfix, circularArr_t* ca, int* status){
 				// pass postfix and stack to clean them in child processes
 				// we dont want the child to hold these blocks
 				char* output = launch_command (*post_iter, operand1, operand2, postfix, &st, ca);
-				free (operand1);
+				if (operand1) free (operand1);
 				free (operand2);
 
 				if (output)  stack_push(&st, output);
@@ -201,6 +201,7 @@ char* execute (char** postfix, circularArr_t* ca, int* status){
 			else {
 				perror ("ERROR operand2 is null\n");
 				*status = -1;
+				clean_stack(&st);
 				return	NULL;
 			}
 		}
@@ -214,22 +215,26 @@ char* execute (char** postfix, circularArr_t* ca, int* status){
 
 	}
 
+
 	if (st.size > 1){
 		perror ("ERROR.... bad command !\n");
 		while (st.size){
 			stack_pop(&st);
 		}
 		*status = -1;
+		clean_stack(&st);
 		return NULL;
 	}
 
 	if (st.size == 0) {
 		*status = 0;
+		clean_stack(&st);
 		return NULL;
 	}
 	char* ans = strdup (stack_top (&st));
 	//free (stack_top (&st));
 	stack_pop(&st);
+	clean_stack(&st);
 	*status = 0;
 	return ans;
 

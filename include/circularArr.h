@@ -22,3 +22,4 @@ extern circularArr_t* ca;
 void ca_init (circularArr_t* ca, int ind);
 void push_crclArr (circularArr_t* ca, char* str);
 int print_history (circularArr_t* ca, long ind);
+void cleanCA (circularArr_t* ca);

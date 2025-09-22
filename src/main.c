@@ -58,7 +58,7 @@ char* process_input(char* main_input, int main_size, circularArr_t* ca, int* sta
 //			//printf ("hii");
 
 		if (!parsed[0]){
-
+			free (parsed);
 			perror ("invalid command");
 			*status = -1;
 			return	NULL;
@@ -71,8 +71,7 @@ char* process_input(char* main_input, int main_size, circularArr_t* ca, int* sta
 		if (tok_size == 1){
 			int st = 0;
 			char* output = handle_single_command (parsed, ca, &st, flag);
-	//		clean2Dstring (parsed, 0, MAXNUM_COMMAND);
-			free (parsed[0]) ;
+			clean2Dstring (parsed, 0, tok_size);
 
 			if (!st){
 				if (NOT_MINI_SHELL == flag)
@@ -94,15 +93,22 @@ char* process_input(char* main_input, int main_size, circularArr_t* ca, int* sta
 	//		post++;
 	//	}
 
-		clean2Dstring(parsed, 0, MAXNUM_COMMAND);
+		clean2Dstring(parsed, 0, tok_size);
 //
+
+		if (!postfix){
+			return NULL;
+
+		}
 
 
 
 		char* exe = execute (postfix, ca, status);
 		if (*status){
 			if (exe) free (exe);
-				return NULL;
+			clean2Dstring (postfix, 0,  MAXNUM_COMMAND);
+
+			return NULL;
 		}
 		else
 			if (flag == NOT_MINI_SHELL)
@@ -171,6 +177,9 @@ char* handle_single_command (char** parsed, circularArr_t* ca, int* status, int 
 			int f = fork();
 			if (f== 0){
 
+				signal (SIGINT, SIG_DFL);
+
+
 				if (!builtin (arg, size_,  ca)){
 					exit (0);
 				}
@@ -234,6 +243,11 @@ circularArr_t* ca;
 
 int main  (){
 
+	// in parent process (shell) ignore the sigint signal and set default action in child
+	// process
+
+
+	signal (SIGINT, SIG_IGN);
 
 circularArr_t* ca = calloc (1, sizeof (circularArr_t));
 ca_init (ca, MAXNUM_HISTORY);
@@ -266,9 +280,10 @@ printf("%s", art);
 		//int st = tab_completion (main_input, main_size);
 
 		fgets (input, size, stdin);
-		if (!strcmp (input, "exit\n"))
+		if (!strcmp (input, "exit\n")){
+			free (main_input);
 			break;
-
+		}
 
 		size = strlen (input);
 
@@ -384,11 +399,13 @@ printf("%s", art);
 		 int st = 0;
 		 char* output = process_input(main_input, main_size, ca, &st, NOT_MINI_SHELL);
 		 if (!st && output){
-			printf ("%s", output);
+			printf ("%s\n", output);
 		 }
 		 if (output) free (output);
 
+		free (main_input);
 
 	}
+	cleanCA(ca);
 	return 0;
 }

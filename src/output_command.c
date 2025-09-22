@@ -14,6 +14,7 @@
 
 int output_command (char* operand1, char* operand2 , int flag, char** postfix, stack_t_* st, circularArr_t* ca){
 
+	if (operand1 == NULL) return 1;
 	// operand1 can be output of a command
 	// operand2 will always have to be a file else it wil create one
 	// operand2 cannot be NULL nor an output of another command !
@@ -50,6 +51,10 @@ int output_command (char* operand1, char* operand2 , int flag, char** postfix, s
 
 	}
 	else if (f == 0){
+
+
+		signal (SIGINT, SIG_DFL);
+
 
 			// child process;
 		assert (dup2 (output_file_fd, STDOUT_FILENO));

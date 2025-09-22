@@ -9,6 +9,13 @@ void node_init (node_t* node, char* command){
 	node-> prev = NULL;
 }
 
+void node_clean (node_t* node) {
+
+	free (node->command);
+
+}
+
+
 void list_init (list_t* l){
 	// the l->head has to be init (malloced)  to dereference node !!
 	l->head = NULL;
@@ -63,8 +70,10 @@ int insert_tail (list_t* l, char* command){
 
 int delete_tail (list_t* l){
 
-	if (l->size == 0)
+	if (l->size == 0){
+		free (l);
 		return 1;
+	}
 
 	node_t* node = l->tail;
 	l->tail = l->tail->prev;
@@ -79,8 +88,10 @@ int delete_tail (list_t* l){
 
 int delete_head (list_t* l){
 
-	if (l->size == 0)
+	if (l->size == 0){
+		free (l);
 		return 1;
+	}
 
 
 	node_t* node = l->head;
@@ -90,6 +101,15 @@ int delete_head (list_t* l){
 	l->size--;
 
 	return 0;
+}
+
+void list_clean (list_t* l) {
+
+	while (l->size) {
+		delete_head(l);
+	}
+	free (l);
+
 }
 
 void stack_init (stack_t_* st){
@@ -111,4 +131,9 @@ int stack_pop (stack_t_* st){
 char* stack_top (stack_t_* st){
 	if (st->size == 0) return NULL;
 	return st->l->head->command;
+}
+void clean_stack(stack_t_* st){
+
+	list_clean (st->l);
+
 }

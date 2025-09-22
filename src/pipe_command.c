@@ -5,6 +5,7 @@
 
 int pipe_command (char* operand1, char* operand2, char** postfix, stack_t_* st){
 
+
 	// case one ->
 	// op1 = writer
 	// op2 = reader
@@ -27,12 +28,20 @@ int pipe_command (char* operand1, char* operand2, char** postfix, stack_t_* st){
 
 		if (f1 == 0){
 
+			signal (SIGINT, SIG_DFL);
+
+
+
 			assert (dup2 (fds_pipe_command[1], STDOUT_FILENO) >= 0);
 			close (fds_pipe_command[1]);
 			close (fds_pipe_command[0]);
 
 			int size = 0;
 			char** args = tokenise (strdup(operand1), " \n\t", &size);
+			if ( !args ){
+				exit (1);
+			}
+
 
 			clean2Dstring (postfix, 0, MAXNUM_COMMAND);
 			while (st->size) stack_pop(st);
@@ -70,12 +79,23 @@ int pipe_command (char* operand1, char* operand2, char** postfix, stack_t_* st){
 
 		if (f2 == 0){
 
+			signal (SIGINT, SIG_DFL);
+
+
 			assert (dup2 (fds_pipe_command[0], STDIN_FILENO) >= 0);
 			close (fds_pipe_command[0]);
 			close (fds_pipe_command[1]);
 
 			int size = 0;
 			char** args = tokenise (strdup(operand2), " \n\t", &size);
+
+			if ( !args ) {
+
+				exit (1);
+
+			}
+
+
 
 			clean2Dstring (postfix, 0, MAXNUM_COMMAND);
 			while (st->size) stack_pop(st);

@@ -27,3 +27,4 @@ void stack_push(stack_t_*, char*);
 void list_init (list_t* l);
 int insert_head (list_t* l, char* command);
 int delete_head (list_t* l);
+void clean_stack (stack_t_* s);

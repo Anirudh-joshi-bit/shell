@@ -21,6 +21,9 @@
 
 				if (f1 == 0){
 
+					signal (SIGINT, SIG_DFL);
+
+
 				int size_1 = 0;
 				char** args_1 = tokenise (operand1, " \n\t", &size_1);
 					execvp (args_1[0], args_1);
@@ -53,6 +56,8 @@
 		f2 = fork ();
 
 		if (f2 == 0){
+
+			signal (SIGINT, SIG_DFL);
 
 			int size_2 = 0;
 			char** args_2 = tokenise (operand2, " \n\t", &size_2);

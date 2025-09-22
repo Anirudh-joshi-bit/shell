@@ -1,4 +1,5 @@
 #include "../include/common.h"
+#include "../include/helper.h"
 #include "../include/circularArr.h"
 
 void ca_init (circularArr_t* ca, int size){
@@ -96,5 +97,13 @@ int print_history (circularArr_t* ca, long ind){
 			return -1;
 	}
 	return 0;
+
+}
+
+
+void cleanCA(circularArr_t* ca){
+
+	clean2Dstring (ca->arr, 0, ca->maxsize-1);
+	free (ca);
 
 }

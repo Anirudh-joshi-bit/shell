@@ -22,7 +22,6 @@ char** postfix_conversion (char** toks){
 	//  dereferancing these garbage value -> segfault (done in clean2Dstring func)
 	//  soln -> either init with NULL manually or use calloc instead (always init with NULL)
 
-	for (int i=0; i<MAXNUM_COMMAND; i++ ) toks_postfix[i] = NULL;
 
 	char** tok_iter_res = toks_postfix;
 
@@ -42,6 +41,7 @@ char** postfix_conversion (char** toks){
 				if (st.size == 1) {
 					perror ("ERROR .... bad paranthesis\n");
 					clean2Dstring (toks_postfix, 0, MAXNUM_COMMAND);
+					clean_stack (&st);
 					return NULL;
 				}
 
@@ -78,6 +78,7 @@ char** postfix_conversion (char** toks){
 		tok_iter_res ++;
 		stack_pop(&st);
 	}
-
+	stack_pop(&st);
+	clean_stack (&st);
 	return toks_postfix;
 }

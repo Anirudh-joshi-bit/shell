@@ -10,6 +10,8 @@ int here_document_command (char* operand1, char* operand2, char** postfix, stack
 		int f = fork ();
 		if (f == 0){
 
+			signal (SIGINT, SIG_DFL);
+
 			int fd = open ("/tmp", O_TMPFILE | O_RDWR | O_EXCL);
 			if (fd < 0){
 				perror ("open in heredoc command");

@@ -35,6 +35,9 @@ int input_redir_command (char* operand1, char* operand2, char** postfix, stack_t
 
 	if (f == 0) {				// child proces
 
+		signal (SIGINT, SIG_DFL);
+
+
 		// replace the default stdin -> file_name;
 		assert (dup2 (fd_file, STDIN_FILENO) >= 0);
 		close (fd_file);
