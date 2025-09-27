@@ -22,7 +22,7 @@ elif [ "$#" -eq 1 ]; then
 
 	elif [[ "$1" == "default" ]]; then
 
-		echo make defaule
+		echo make default
 		make
 
 	else
@@ -39,13 +39,14 @@ fi
 
 if [ $error -eq 0 ]; then
 
-	if [ isDebug ]; then
+	if [ $isDebug -eq 1 ]; then
 		mv build/SHELL_D ~/.local/bin/
 
 	else
 		mv build/SHELL ~/.local/bin/
 	fi
 
-	echo 'export PATH=$PATH:$HOME/.local/bin' >> ~/.zshrc
-	echo 'export PATH=$PATH:$HOME/.local/bin' >> ~/.bashrc
+	grep -qxF 'export PATH=$PATH:$HOME/.local/bin' ~/.zshrc || echo 'export PATH=$PATH:$HOME/.local/bin' >> ~/.zshrc
+    grep -qxF 'export PATH=$PATH:$HOME/.local/bin' ~/.bashrc || echo 'export PATH=$PATH:$HOME/.local/bin' >> ~/.bashrc
+
 fi
