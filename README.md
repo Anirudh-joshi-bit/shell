@@ -35,4 +35,4 @@ A POSIX-style Linux shell implemented in C, supporting advanced command executio
 - Run `install.sh`
 - Arguments -> `default`   to build the shell , `debug`   to add `-g` flag, if no arguments, default built will be made
 
-- Run the shell use - `SHELL` command for default built, SHELL_D` command for debug built
+- To run the shell,  use - `SHELL` command for default built, `SHELL_D` command for debug built
