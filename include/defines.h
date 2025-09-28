@@ -1,13 +1,17 @@
 
 #pragma once
 
-#define RED "\x1b[31;40m"
-#define	BLUE "\x1b[34;40m"
-#define GREEN "\x1b[32;40m"
+#define RESET   "\001\033[0m"
+#define RED     "\033[1;31m"
+#define GREEN   "\033[1;32m"
+#define CYAN    "\001\033[1;36m"
+#define MAGENTA "\033[1;35m"
+
 
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define PERROR(msg) perror (RED msg RESET)
 
 #define MINI_SHELL 1
 #define NOT_MINI_SHELL 0

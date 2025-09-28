@@ -24,7 +24,7 @@ int output_command (char* operand1, char* operand2 , int flag, char** postfix, s
 
 	if (tok_size > 1){
 
-		perror("ERROR multiple file name \n");
+		PERROR ("ERROR multiple file name \n");
 		clean2Dstring (file_name, 0, tok_size);
 		return -1;
 	}
@@ -39,14 +39,14 @@ int output_command (char* operand1, char* operand2 , int flag, char** postfix, s
 
 	if (output_file_fd < 0){
 
-		perror ("ERROR file not found");
+		PERROR ("ERROR file not found");
 		return -1;
 	}
 
 	int f = fork ();
 	if (f < 0){
 			// error
-		perror ("ERROR in fork !!");
+		PERROR ("ERROR in fork !!");
 		exit (-1);
 
 	}

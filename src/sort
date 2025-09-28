@@ -16,65 +16,12 @@
 // ans when implementing multiple command and operators, we need the output of a commd to be in a string
 // to achive this we redirect the output to a fd that is piped (basically the stdout is closed)
 
-const char* commands[] = {
-	"ls",			"cd",			"grep",			 "clear",			"history",			"ps",
-	"vim",			"find",			"fzf",			 "exit",			"htop",				"btop",
-	"man",			"touch",		"mkdir",		 "rm",				"rmdir",			"make",
-	"make all",		"valgirind",	"gdb",			 "sudo",			"./build/SHELL_D",	"nat",
-	NULL
-};
+
+
 
 
 
 // global or static variables must init with compile time conatanst (numbers, addres to other global, NULL)
-
-char* command_generate (const char* text, int state){
-
-	// this function will be called repeatedly by the readline internals
-	// readline expoects a string with prefix same as text each time this function is called
-	// or NULL if there is no matching string
-	// returning NULL will notify readline to stop calling this function;
-
-
-	static int index, len;
-	if (state == 0){
-		// this is the first call => set the value of variables
-		index = 0;
-		len = strlen (text);
-	}
-
-	// find a matching string ->
-	while (commands[index]){
-		const char* cmd = commands[index];
-		index++;
-		if (!strncmp (cmd, text, len)){
-
-			return strdup(cmd);
-
-		}
-	}
-	return NULL;
-}
-
-
-
-char** command_completion (const char* text, int start, int end){
-
-	if (start == 0) {
-		return rl_completion_matches (text, command_generate);
-	}
-
-	// if text is not the first word -> do the default (autocomplete by file/dir name);
-	return NULL;
-}
-
-
-char* get_input (char* msg){
-	rl_attempted_completion_function = command_completion;
-	char* input = readline (msg);
-
-	return input;
-}
 
 
 
@@ -199,10 +146,10 @@ printf (GREEN"welcome to SHELL"RESET"\n");
 
 		char pwd[MAXLEN_PWD];
 		getcwd (pwd, MAXLEN_PWD);
-	//	printf (CYAN"__%s__ $ "RESET, pwd);
+		printf (CYAN"__%s__ $ "RESET, pwd);
 
 		char* main_input = calloc (MAXLEN_INPUT, sizeof (char));
-		char* input;
+		char input[MAXLEN_INPUT];
 
 		int main_size = MAXLEN_INPUT, main_iter = 0, size = MAXLEN_INPUT, error_found = 0;
 
@@ -211,21 +158,10 @@ printf (GREEN"welcome to SHELL"RESET"\n");
 		// tab completion implementation
 
 		//int st = tab_completion (main_input, main_size);
-		char* msg =	calloc (MAXLEN_PWD + 10, sizeof (char));
-		strcat (msg, CYAN);
-		strcat (msg, "__");
-		strcat (msg, pwd);
-		strcat (msg, "__ $ ");
-		strcat (msg, RESET);
-	//	printf (CYAN);
-		input = get_input (msg);
-	//	if (input && input[strlen(input)] != '\n')
-			strcat (input, "\n");
-		printf (RESET);
 
+		fgets (input, size, stdin);
 		if (!strcmp (input, "exit\n")){
 			free (main_input);
-			free(input);
 			break;
 		}
 
@@ -332,8 +268,6 @@ printf (GREEN"welcome to SHELL"RESET"\n");
 
 		if (error_found) {
 			PERROR ("error found inside the for loop !!");
-			free (main_input);
-			free (input);
 			continue;
 		}
 
@@ -350,7 +284,6 @@ printf (GREEN"welcome to SHELL"RESET"\n");
 		 if (output) free (output);
 
 		free (main_input);
-		free (input);
 
 	}
 	cleanCA(ca);

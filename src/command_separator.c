@@ -1,4 +1,5 @@
 #include "../include/common.h"
+#include "../include/defines.h"
 #include "../include/stack.h"
 #include "../include/helper.h"
 
@@ -29,7 +30,7 @@
 					execvp (args_1[0], args_1);
 
 
-					perror ("command not found");
+					PERROR ("command not found");
 					exit (1);
 
 				}
@@ -44,7 +45,7 @@
 
 				}
 				else {
-					perror ("FORK in ; ");
+					PERROR ("FORK in ; ");
 					exit (1);
 
 				}
@@ -80,7 +81,7 @@
 
 		}
 		else {
-			perror ("FORK in ;");
+			PERROR ("FORK in ;");
 			exit (1);
 		}
 

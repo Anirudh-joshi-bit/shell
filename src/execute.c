@@ -41,12 +41,6 @@ int fds[2];
 
 
 
-	int background_exe (char* operand1, char* operand2, char** postfix, stack_t_* st){
-
-		return 0;
-	}
-
-
 
 	char* launch_command (char* operator, char* operand1, char* operand2, char** postfix, stack_t_* st, circularArr_t* ca){
 
@@ -59,7 +53,7 @@ int fds[2];
 		// that fd is stdout_cp
 		int stdout_cpy = dup(STDOUT_FILENO);
 		if (stdout_cpy < 0){
-			perror ("ERROR in stdout_cpy in launch command \n");
+			PERROR ("ERROR in stdout_cpy in launch command \n");
 			close (fds[0]);
 			close (fds[1]);
 			return NULL;
@@ -67,7 +61,7 @@ int fds[2];
 		// set the stdout to fd 1 so that output can be read
 		// child will copy the fds meaning if fds[0] is opened in fd 0 as parent child will also open fds[0] in fd 0
 		if (dup2 (fds[1], STDOUT_FILENO )< 0){
-			perror ("ERROR in dup2 fd[1] in launch command \n");
+			PERROR ("ERROR in dup2 fd[1] in launch command \n");
 			close (fds[0]);
 			close (fds[1]);
 			close (stdout_cpy);
@@ -77,7 +71,7 @@ int fds[2];
 
 		if (!strcmp (operator, "<")) {
 			if (input_redir_command(operand1, operand2, postfix, st)){
-				perror ("ERROR in input redir\n");
+				PERROR ("ERROR in input redir\n");
 				close (fds[1]);
 				close (fds[0]);
 				dup2 (stdout_cpy, STDOUT_FILENO);
@@ -88,35 +82,56 @@ int fds[2];
 		else if (!strcmp (operator, ">")){
 
 			if (output_command(operand1, operand2, TRUNC_OUTPUT, postfix, st, ca)){
-				perror ("ERROR in ouput_redir_command\n");
+				PERROR ("ERROR in ouput_redir_command\n");
 				close (fds [1]);
 				close (fds[0]);
 				dup2 (stdout_cpy, STDOUT_FILENO);
 				close (stdout_cpy);
+				return NULL;
 			}
 		}
 		else if (!strcmp (operator, ">>")) {
 			if (output_command(operand1, operand2, APPEND_OUTPUT, postfix, st, ca)){
-				perror ("ERROR in ouput_redir_command\n");
+				PERROR ("ERROR in ouput_redir_command\n");
 				close (fds [1]);
 				close (fds[0]);
 				dup2 (stdout_cpy, STDOUT_FILENO);
 				close (stdout_cpy);
+				return NULL;
 			}
 		}
 		else if (!strcmp (operator, "<<")) {
 
 			if (here_document_command(operand1, operand2, postfix, st)){
-				perror ("heredoc");
+				PERROR ("heredoc");
+				close (fds [1]);
+				close (fds[0]);
+				dup2 (stdout_cpy, STDOUT_FILENO);
+				close (stdout_cpy);
+				return NULL;
 			}
 		}
 		else if (!strcmp (operator, "|")) {
 
-			pipe_command(operand1, operand2, postfix, st);
+			if (pipe_command(operand1, operand2, postfix, st)){
+				PERROR ("pipe");
+				close (fds [1]);
+				close (fds[0]);
+				dup2 (stdout_cpy, STDOUT_FILENO);
+				close (stdout_cpy);
+				return NULL;
+			}
 		}
 		else if (!strcmp (operator, ";")) {
 
-			command_separator (operand1, operand2, postfix, st);
+			if (command_separator (operand1, operand2, postfix, st)){
+				PERROR ("command_separator");
+				close (fds [1]);
+				close (fds[0]);
+				dup2 (stdout_cpy, STDOUT_FILENO);
+				close (stdout_cpy);
+				return NULL;
+			}
 		}
 
 	char* output = calloc (MAXLEN_OUTPUT, sizeof (char));
@@ -125,12 +140,12 @@ int fds[2];
 	close (fds[1]);
 
 	if (dup2 (stdout_cpy, STDOUT_FILENO) < 0){			// this will reopen the default stdout
-		perror ("ERROR in dup2 stdout_cpy\n");
+		PERROR("ERROR in dup2 stdout_cpy\n");
 		exit (1);
 	}
 
 	if (close (stdout_cpy) < 0){
-		perror ("ERROR in close (stdout_cpy) in launch command \n");
+		PERROR ("ERROR in close (stdout_cpy) in launch command \n");
 		free (output);
 		return	NULL;
 	}
@@ -172,6 +187,7 @@ char* execute (char** postfix, circularArr_t* ca, int* status){
 
 	stack_t_ st;
 	stack_init (&st);
+	//stack_push (&st, "(");
 
 	char** post_iter = postfix;
 
@@ -199,7 +215,7 @@ char* execute (char** postfix, circularArr_t* ca, int* status){
 
 			}
 			else {
-				perror ("ERROR operand2 is null\n");
+				PERROR ("ERROR operand2 is null\n");
 				*status = -1;
 				clean_stack(&st);
 				return	NULL;
@@ -217,7 +233,7 @@ char* execute (char** postfix, circularArr_t* ca, int* status){
 
 
 	if (st.size > 1){
-		perror ("ERROR.... bad command !\n");
+		PERROR ("ERROR.... bad command !\n");
 		while (st.size){
 			stack_pop(&st);
 		}

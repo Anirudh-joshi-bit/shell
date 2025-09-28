@@ -11,12 +11,12 @@ int input_redir_command (char* operand1, char* operand2, char** postfix, stack_t
 
 	int size = 0;
 	if (operand1 == NULL || operand2 == NULL){
-		perror ("ERROR bad command and operations \n");
+		PERROR ("ERROR bad command and operations \n");
 		return -1;
 	}
 	char** file_name = tokenise (strdup(operand2), " ", &size);
 	if (size > 1){
-		perror ("ERROR too many file names !! \n");
+		PERROR ("ERROR too many file names !! \n");
 		clean2Dstring(file_name, 0, size);
 		return -1;
 	}
@@ -24,7 +24,7 @@ int input_redir_command (char* operand1, char* operand2, char** postfix, stack_t
 	int fd_file = open ( file_name[0], O_RDONLY);
 
 	if (fd_file < 0){
-		perror ("file does not exits \n");
+		PERROR ("file does not exits \n");
 		clean2Dstring(file_name, 0, size);
 													 	// MAXLEN_COMMAND = size of
 		return -1;										// 2d string returned by tokenise
@@ -50,7 +50,7 @@ int input_redir_command (char* operand1, char* operand2, char** postfix, stack_t
 
 		execvp (args[0], args);
 
-		perror ("command not found !! \n");
+		PERROR ("command not found !! \n");
 		clean2Dstring (args, 0, size);
 		exit (-1);
 	}
@@ -62,7 +62,7 @@ int input_redir_command (char* operand1, char* operand2, char** postfix, stack_t
 	}
 	else {				// error in fork !!
 
-		perror ("ERROR in fork in input redirection\n");
+		PERROR ("ERROR in fork in input redirection\n");
 		exit (-1);
 	}
 	return 0;

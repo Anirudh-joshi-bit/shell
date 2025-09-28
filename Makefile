@@ -1,5 +1,5 @@
 CC = gcc
-FLAGS = -Wall -Werror -o3
+FLAGS = -Wall -Werror -o3 -lreadline
 
 BUILD_FOLDER = build
 SRC_FOLDER = src
@@ -12,7 +12,10 @@ BUILD_FILES_DEB =  $(patsubst $(SRC_FOLDER)/%.c, $(BUILD_FOLDER)/deb_%.o, $(SRC_
 OUTPUT = $(BUILD_FOLDER)/SHELL
 OUTPUT_DEBUG = $(BUILD_FOLDER)/SHELL_D
 
+
 default : $(OUTPUT)
+
+all : $(OUTPUT) $(OUTPUT_DEBUG)
 
 debug : $(OUTPUT_DEBUG)
 

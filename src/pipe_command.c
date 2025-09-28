@@ -52,9 +52,8 @@ int pipe_command (char* operand1, char* operand2, char** postfix, stack_t_* st){
 			// dod the same thing inside processing of operand2
 
 
-			// meaning command not found !!
-			perror ("ERROR ... command not found\n");
-			exit (-1);
+			// means command not found !!
+			exit (1);
 
 		}
 		else if (f1 > 0){
@@ -70,7 +69,7 @@ int pipe_command (char* operand1, char* operand2, char** postfix, stack_t_* st){
 		}
 
 		else if (f1<0){
-			perror ("ERROR ... fork failed in pipecommand\n");
+			PERROR ("ERROR ... fork failed in pipecommand\n");
 			exit (1);
 
 		}
@@ -102,11 +101,11 @@ int pipe_command (char* operand1, char* operand2, char** postfix, stack_t_* st){
 
 			execvp (args[0], args);
 
-			perror ("ERROR ... command not found\n");
+			PERROR ("ERROR ... command not found\n");
 			exit (-1);
 		}
 		else if (f2 < 0){
-			perror ("ERROR ... fork failed in pipecommand\n");
+			PERROR ("ERROR ... fork failed in pipecommand\n");
 			exit (1);
 		}
 

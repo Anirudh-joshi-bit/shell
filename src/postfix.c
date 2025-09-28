@@ -39,7 +39,7 @@ char** postfix_conversion (char** toks){
 					stack_pop(&st);
 				}
 				if (st.size == 1) {
-					perror ("ERROR .... bad paranthesis\n");
+					PERROR ("ERROR .... bad paranthesis\n");
 					clean2Dstring (toks_postfix, 0, MAXNUM_COMMAND);
 					clean_stack (&st);
 					return NULL;

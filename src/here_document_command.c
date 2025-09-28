@@ -14,7 +14,7 @@ int here_document_command (char* operand1, char* operand2, char** postfix, stack
 
 			int fd = open ("/tmp", O_TMPFILE | O_RDWR | O_EXCL);
 			if (fd < 0){
-				perror ("open in heredoc command");
+				PERROR ("open in heredoc command");
 				exit (-1);
 			}
 			fsync (fd);
@@ -32,7 +32,7 @@ int here_document_command (char* operand1, char* operand2, char** postfix, stack
 
 			execvp (args[0], args);
 
-			perror ("execvp heredoc");
+			PERROR ("execvp heredoc");
 			exit(1);
 
 		}
@@ -40,14 +40,14 @@ int here_document_command (char* operand1, char* operand2, char** postfix, stack
 			int st = 0;
 			wait (&st);
 			if (st){
-				perror ("heredoc");
+				PERROR ("heredoc");
 				return -1;
 			}
 
 
 		}
 		else if (f < 0){
-			perror ("fork in heredoc");
+			PERROR ("fork in heredoc");
 			exit (-1);
 		}
 		return 0;

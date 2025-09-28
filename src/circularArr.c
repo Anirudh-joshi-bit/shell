@@ -1,4 +1,5 @@
 #include "../include/common.h"
+#include "../include/defines.h"
 #include "../include/helper.h"
 #include "../include/circularArr.h"
 
@@ -14,7 +15,7 @@ void ca_init (circularArr_t* ca, int size){
 int pop_crclArr (circularArr_t* ca){
 
 	if (ca->size == 0){
-		perror ("circularArr_t pop");
+		PERROR ("circularArr_t pop");
 		return -1;
 
 	}
@@ -42,7 +43,7 @@ void push_crclArr (circularArr_t* ca, char* str){
 	else if (ca -> size == ca -> maxsize){
 		// pop and push the string
 		if (pop_crclArr(ca)){
-			perror ("msize == 0 !");
+			PERROR ("msize == 0 !");
 			exit (1);
 		}
 		ca->s = (ca->s+1) % ca->maxsize;
