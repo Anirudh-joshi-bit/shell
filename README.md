@@ -20,6 +20,9 @@ A POSIX-style Linux shell implemented in C, supporting advanced command executio
 - `exit` → terminate the shell gracefully
 - `Ctrl+C` → interrupt the current foreground process without killing the shell
 
+### Tab completion and History navigation
+- Commands can be auto-completed with `Tab`, and previously executed commands can be navigated using `↑` / `↓` keys.
+
 ### System-Level Implementation
 - Process creation with `fork()`, `execvp()`, `wait()`
 - Inter-process communication using **pipes**
