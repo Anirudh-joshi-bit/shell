@@ -30,7 +30,6 @@
 					execvp (args_1[0], args_1);
 
 
-					PERROR ("command not found");
 					exit (1);
 
 				}

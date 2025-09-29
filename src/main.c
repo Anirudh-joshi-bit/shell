@@ -20,7 +20,7 @@ const char* commands[] = {
 	"ls",			"cd",			"grep",			 "clear",			"history",			"ps",
 	"vim",			"find",			"fzf",			 "exit",			"htop",				"btop",
 	"man",			"touch",		"mkdir",		 "rm",				"rmdir",			"make",
-	"make all",		"valgirind",	"gdb",			 "sudo",			"./build/SHELL_D",	"nat",
+	"make all",		"valgrind",	"gdb",			 "sudo",			"./build/SHELL_D",	"nat",
 	NULL
 };
 
@@ -69,9 +69,9 @@ char** command_completion (const char* text, int start, int end){
 }
 
 
-char* get_input (char* msg){
+char* get_input (){
 	rl_attempted_completion_function = command_completion;
-	char* input = readline (msg);
+	char* input = readline ("");
 
 	return input;
 }
@@ -99,15 +99,14 @@ char* process_input(char* main_input, int main_size, circularArr_t* ca, int* sta
 		// this creates problem in execute fun (in the stack) as there are spaces in the place of actual command !
 		// sol ->
 		// remove the entries with no actual command (only spaces and one \n at the end)
+		// this is handled by the parse function internally (no need to use a different function)
 
-	//	char** parsed = sanitise (toks, tok_size);
-	//	char** t = parsed;
+//		char** t = parsed;
 //		while (strcmp (*t, "")){
 //			printf ("%s\n", *t);
 //			t++;
 //
 //		}
-//			//printf ("hii");
 
 		if (!parsed[0]){
 			free (parsed);
@@ -138,13 +137,6 @@ char* process_input(char* main_input, int main_size, circularArr_t* ca, int* sta
 
 		char** postfix = postfix_conversion (parsed);
 
-	char ** post = postfix;
-	while (*post){
-
-		printf ("%s\n", *post);
-		post++;
-	}
-
 		clean2Dstring(parsed, 0, tok_size);
 //
 
@@ -152,7 +144,6 @@ char* process_input(char* main_input, int main_size, circularArr_t* ca, int* sta
 			return NULL;
 
 		}
-
 
 
 		char* exe = execute (postfix, ca, status);
@@ -176,6 +167,7 @@ circularArr_t* ca;
 
 int main  (){
 
+
 	// in parent process (shell) ignore the sigint signal and set default action in child
 	// process
 
@@ -195,11 +187,14 @@ const char *art =
 printf("\n" MAGENTA "%s" RESET "\n", art);
 printf (GREEN"welcome to SHELL"RESET"\n");
 
+
+
 	while (true){
 
 		char pwd[MAXLEN_PWD];
 		getcwd (pwd, MAXLEN_PWD);
-	//	printf (CYAN"__%s__ $ "RESET, pwd);
+
+		 printf (CYAN "__%s__ $ \n" RESET, pwd);
 
 		char* main_input = calloc (MAXLEN_INPUT, sizeof (char));
 		char* input;
@@ -208,22 +203,28 @@ printf (GREEN"welcome to SHELL"RESET"\n");
 
 
 
-		// tab completion implementation
+		//fgets (input, size, stdin);
 
-		//int st = tab_completion (main_input, main_size);
-		char* msg =	calloc (MAXLEN_PWD + 10, sizeof (char));
-		strcat (msg, CYAN);
-		strcat (msg, "__");
-		strcat (msg, pwd);
-		strcat (msg, "__ $ ");
-		strcat (msg, RESET);
-	//	printf (CYAN);
-		input = get_input (msg);
-	//	if (input && input[strlen(input)] != '\n')
-			strcat (input, "\n");
-		printf (RESET);
 
-		if (!strcmp (input, "exit\n")){
+		// tab completion start
+
+		input = get_input ();
+
+	    if (*input) add_history(input);
+
+
+		// fgets reads \n so the whole design was made keeping this point in mind
+		// but readline does not read \n
+		//				i could change the parser and postfix conv fun
+		//				or just append a /n char into the output of readline function
+
+		input = realloc (input, strlen (input) + 2);
+		strcat (input, "\n");
+
+		// tab completion done
+
+
+		if (!strncmp (input, "exit", strlen ("exit"))){
 			free (main_input);
 			free(input);
 			break;
@@ -327,32 +328,33 @@ printf (GREEN"welcome to SHELL"RESET"\n");
 
 		main_input[main_iter] = '\0';
 
+		free (input);
 
 
 
 		if (error_found) {
 			PERROR ("error found inside the for loop !!");
 			free (main_input);
-			free (input);
 			continue;
 		}
 
 		// handling << -> done
-
 
 		 main_size = strlen (main_input);
 
 		 int st = 0;
 		 char* output = process_input(main_input, main_size, ca, &st, NOT_MINI_SHELL);
 		 if (!st && output){
-			printf ("%s\n", output);
+			printf ( "%s\n", output);
 		 }
 		 if (output) free (output);
 
 		free (main_input);
-		free (input);
+	//	free (input);
 
 	}
+
+	rl_clear_history();
 	cleanCA(ca);
 	return 0;
 }

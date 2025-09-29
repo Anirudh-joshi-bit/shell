@@ -6,6 +6,7 @@
 #define GREEN   "\033[1;32m"
 #define CYAN    "\001\033[1;36m"
 #define MAGENTA "\033[1;35m"
+#define YELLOW  "\033[33m"
 
 
 
